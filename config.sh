@@ -1178,7 +1178,7 @@ MIRROR_INCLUDE_CORE=true
 # = sólo el upstream). Se descarga <URL>/<fichero de MANIFEST.tsv> y se acepta
 # únicamente si su SHA-256 cuadra con el manifiesto. Si el asset no existe, se
 # reconstruye desde el upstream como siempre.
-MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player/releases/download/snapshots"
+MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer/releases/download/snapshots"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

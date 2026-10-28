@@ -82,7 +82,7 @@ los requisitos de arriba (16 GB de RAM y al menos 60 GiB libres) antes de comenz
 
 #### Pasos
 
-1. Clona el proyecto en el servidor, con `git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer`, o
+1. Clona el proyecto en el servidor, con `git clone https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer.git azerothcore-installer`, o
    descarga y descomprime un ZIP de versión. Conserva
    todas sus carpetas, incluidos `modules/`, `patches/`, `cliente/` y `web-panel/`.
    Cada versión publica el árbol como ZIP y `.tar.gz` junto a un `SHA256SUMS`;
@@ -193,7 +193,7 @@ post-instalación, panel web, servicios y verificación — pidiendo la contrase
 de `sudo` una sola vez:
 
 ```bash
-git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer && cd azerothcore-installer   # o descomprime el ZIP de una versión
+git clone https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer.git azerothcore-installer && cd azerothcore-installer   # o descomprime el ZIP de una versión
 nano config.sh
 chmod +x scripts/instalar-todo.sh && ./scripts/instalar-todo.sh
 ```
@@ -1101,7 +1101,7 @@ NOTIFY_GM_ON_UPDATE=true        # correo dentro del juego a las cuentas GM
 GM_NOTIFY_MIN_LEVEL=3
 MIRROR_REPOS=true               # copias offline en mirrors/
 MIRROR_INCLUDE_CORE=true        # 209 MB; este repo vive en un Gitea sin límite de 100 MB
-MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player/releases/download/snapshots"  # asset (https://) del que ./install.sh --hidratar descarga antes de reconstruir
+MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer/releases/download/snapshots"  # asset (https://) del que ./install.sh --hidratar descarga antes de reconstruir
 ```
 
 **`versions.lock`** fija el commit exacto de cada uno de los 20 repositorios (19 hasta el 02/09/2026, cuando entró

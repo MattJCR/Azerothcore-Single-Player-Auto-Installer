@@ -90,7 +90,7 @@ begins. The game runs on the player's PC.
 
 #### Steps
 
-1. Clone the project on the server with `git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer`,
+1. Clone the project on the server with `git clone https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer.git azerothcore-installer`,
    or download and unzip a version's ZIP. Keep all its
    folders, including `modules/`, `patches/`, `cliente/` and `web-panel/`. Each
    version publishes the tree as a ZIP and a `.tar.gz` next to a `SHA256SUMS`;
@@ -201,7 +201,7 @@ Complete, unattended installation — phases 1-7, first start, post-install, web
 panel, services and verification — asking for the `sudo` password only once:
 
 ```bash
-git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer && cd azerothcore-installer   # or unzip a version's ZIP
+git clone https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer.git azerothcore-installer && cd azerothcore-installer   # or unzip a version's ZIP
 nano config.sh
 chmod +x scripts/instalar-todo.sh && ./scripts/instalar-todo.sh
 ```
@@ -1114,7 +1114,7 @@ NOTIFY_GM_ON_UPDATE=true        # in-game mail to the GM accounts
 GM_NOTIFY_MIN_LEVEL=3
 MIRROR_REPOS=true               # offline copies in mirrors/
 MIRROR_INCLUDE_CORE=true        # 209 MB; this repo lives on a Gitea with no 100 MB limit
-MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player/releases/download/snapshots"  # release asset (https://) that ./install.sh --hidratar downloads from before rebuilding
+MIRROR_ASSET_BASE_URL="https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer/releases/download/snapshots"  # release asset (https://) that ./install.sh --hidratar downloads from before rebuilding
 ```
 
 **`versions.lock`** pins the exact commit of each of the 20 repositories (19 until

@@ -281,7 +281,7 @@ acortan la compilación). Hardware con el que se ha probado: `INSTALL_ES.md`.
 **Obtener el proyecto**: clónalo en el servidor (o descarga el ZIP de una versión y comprueba su `SHA256SUMS`, ver `INSTALL_ES.md`):
 
 ```bash
-git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer
+git clone https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer.git azerothcore-installer
 cd azerothcore-installer
 ```
 

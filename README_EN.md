@@ -283,7 +283,7 @@ cores shorten the build). Hardware it has been tested on: `INSTALL_EN.md`.
 **Get the project**: clone it on the server (or download a version's ZIP and check its `SHA256SUMS`, see `INSTALL_EN.md`):
 
 ```bash
-git clone https://github.com/MattJCR/Azerothcore-Single-Player.git azerothcore-installer
+git clone https://github.com/MattJCR/Azerothcore-Single-Player-Auto-Installer.git azerothcore-installer
 cd azerothcore-installer
 ```
 
