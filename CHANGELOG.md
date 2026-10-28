@@ -14,6 +14,20 @@
 > llamándolo `INSTALL.md`; su traducción es `INSTALL_EN.md`. Lo mismo pasa con `README.md`,
 > que ahora es un selector de idioma: el contenido completo está en `README_ES.md` y `README_EN.md`.
 
+## 28/10/2026 (12:35) — Actualización de mod-dungeon-clear y búsqueda de alternativa para wintergrasp
+
+Procedimiento de `INSTALL_ES.md` parte 4 §3. Sin PR abiertos en GitHub. De los 25 repositorios accesibles sólo **mod-dungeon-clear** tenía novedades: `fcb680f` → `7fb6ebd` (8 commits del 26/10); core y mod-playerbots al día. Addons de cliente sin revisar en esta pasada.
+
+**Qué trae.** Blackfathom Deeps (rompecabezas de saltos, pasaje de Sarevess, Fuegos de Aku'mai), cadenas fuera de malla para todo el grupo y respiración bajo el agua, rescates (grupo caído bajo la Biblioteca de Karazhan y por el agujero del callejón-trampa de Scarlet), jefes de ICC/Sagrario Rubí en dificultad heroica, no quedarse junto al cadáver del líder al resucitar y fin del vaivén de asistencia del líder. 54 ficheros, +4.055 / −85 líneas. **Sin cambios de conf ni de SQL** y sin parche propio (`patches/mod-dungeon-clear/` no existe); sólo se tocaron `CMakeLists.txt` (comentarios), `mod-dungeon-clear.cmake` (pruebas) y `DungeonClearModule.cpp` (el despawn de bichos caídos en Stratholme ahora también cubre el agujero del callejón).
+
+**Despliegue.** Copia de seguridad, fases 3, 4 y 5 (instalación completada, 14 s la última), arranque de authserver, socket y worldserver, `--mirror`/`--verify-mirrors` (snapshot nuevo `mod-dungeon-clear@7fb6ebdefb80`, SHA-256 `b03e4da5…`, coincide con el manifiesto) y `--freeze`. `verificar-instalacion.sh` en verde. El `Server.log` arranca sin errores nuevos (los `ERROR` son de contenido de la BD del core, ya conocidos). No hay prueba en juego: el módulo sólo actúa cuando alguien hace una mazmorra con bots.
+
+**Corrección del `--freeze`.** Como siempre, reescribió `versions.lock` y borró los comentarios; se restauró el fichero con comentarios (mismo contenido de filas, sólo cambia el orden) en el repo y en el instalador de la VM. La copia del panel (`/opt/azerothcore-panel/update-locks/`) queda con la versión del `--freeze`, que lleva las mismas filas.
+
+**Wintergrasp: no hay alternativa con nuestra versión o superior.** `vrzgames/mod-playerbots-wintergrasp` sigue en 404 (su cuenta tiene 3 repos públicos y ninguno es éste). La búsqueda en GitHub por nombre, descripción y código sólo da `chenyifeiai/mod-playerbots-wintergrasp`: no es fork, su única rama `main` está en `f313a99` (08/09, la versión 1.x, anterior a la 2.0 que usamos), sin PR, etiquetas ni forks. Nuestro `f83696b` (18/10, autor «iCore») sigue siendo alcanzable por SHA en ese repositorio (`compare main...f83696b` = adelantado 1, atrasado 0), pero fuera de toda rama: GitHub puede limpiarlo. **Decisión:** no cambiar la URL de `versions.lock` (apuntar a `chenyifeiai` haría que el revisor diese «al día» con un commit más antiguo y no vería nada nuevo). La protección real es el snapshot de `mirrors/` y el asset `snapshots`, ya verificados con el mismo SHA-256 (ver entrada del 24/10/2026). Si algún día reaparece el repositorio original, basta volver a mirar `tools/revisar-actualizaciones`.
+
+**Pendiente de la orden del desarrollador (PUB06):** el snapshot nuevo de dungeon-clear (`7fb6ebdefb80`) aún no está como asset en GitHub: la instalación pública seguirá usando el upstream de jrad7 para ese módulo hasta que se ejecute `python docs/publicacion/subir-snapshots.py --subir --podar`.
+
 ## 24/10/2026 (08:35) — Snapshots como asset de GitHub para los 26 repositorios (desaparece el upstream de wintergrasp)
 
 **Motivo.** `vrzgames/mod-playerbots-wintergrasp` ya no existe para nosotros («Repository not found»; la cuenta sólo tiene 2 repos públicos y ninguno es éste): borrado o privado, no se distingue desde fuera. `tools/revisar-actualizaciones` lo marcaba «Sin acceso». La VM no corría peligro (módulo compilado y snapshot `f83696b2e236` en `mirrors/` con el SHA-256 del manifiesto), pero la **edición pública no lleva los `.tar.gz`** y hidrata desde el upstream: una instalación limpia desde GitHub habría fallado en ese módulo.

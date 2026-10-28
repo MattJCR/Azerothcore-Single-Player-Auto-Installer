@@ -89,6 +89,8 @@
 #   y UBRS), mod-individual-progression (3) y mod-playerbots-wintergrasp (reescrita: tácticas, equilibrio
 #   de equipos). Parche 02 de wintergrasp retirado (el upstream ya migró a ServerScript) y el 01 rehecho.
 #   Ver CHANGELOG.
+# 2026-10-28: mod-dungeon-clear a 7fb6ebd (8 commits: Blackfathom Deeps, cadenas fuera de malla,
+#   rescates en Karazhan y Scarlet, asistencia del líder). Aditivo, sin conf/SQL ni parche local.
 #
 # Para volver a una de estas versiones:  ./install.sh --only 3 && ./install.sh --from 4
 # Para actualizar el lock a lo instalado: ./install.sh --freeze
@@ -102,7 +104,7 @@ mod-quest-loot-party	master	c3955915c76d5a22a9d25a44482345d368a8de82	2026-10-12	
 mod-autobalance	master	1d707cb61a0962ab01e4123681e2d3b66cc558a2	2026-10-07	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	master	1930525b9530d329cb9fe0504a3c9b5b40a12261	2025-11-25	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
 mod-congrats-on-level	master	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	2025-02-28	https://github.com/azerothcore/mod-congrats-on-level.git
-mod-dungeon-clear	master	fcb680fb279cd25696e7f848fad72c5d41282032	2026-10-22	https://github.com/jrad7/mod-dungeon-clear.git
+mod-dungeon-clear	master	7fb6ebdefb8038af2676c280214f8a15c843b347	2026-10-26	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	main	612eaf804cd7fc4af74fde66d376a571a5550077	2026-09-06	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guild-levels	main	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	2026-05-01	https://github.com/Old-Man-Warcraft/mod-guild-levels.git
 mod-guildhouse	master	0b3cc14e947a859f8a7751a10676107d6316275b	2026-06-18	https://github.com/azerothcore/mod-guildhouse.git
