@@ -36,7 +36,7 @@ Lo verificado aquí lo está contra el código de las versiones fijadas en
 
 12. [Escribir un módulo propio](#escribir-un-módulo-propio-reglas) · [Escribir un parche](#escribir-un-parche-sobre-código-de-terceros) · [Crear un objeto propio](#crear-un-objeto-que-no-existe-en-335a) · [Parches de addons](#parches-de-addons-de-cliente-patches-cliente)
 13. [Profesiones (SP01)](#experiencia-por-profesiones-sp01) · [Sede de hermandad (SP02)](#sede-de-hermandad-sp02) · [mod-treasure (SP03)](#mod-treasure-tesoros-itinerantes-sp03) · [Botín de misión en grupo (SP04)](#botín-blanco-de-misión-en-grupo-sp04) · [mod-arac-trainer-audit](#mod-arac-trainer-audit-auditoría-de-entrenadores)
-14. [El verificador sintético](#el-verificador-sintético-toolscliente-sintetico) · [Edición pública: snapshots, addons y recursos del cliente](#edición-pública-snapshots-addons-y-recursos-del-cliente-pub04-y-pub04-i) · [Procedencia de mapas e iconos](#procedencia-de-mapas-e-iconos)
+14. [El verificador sintético](#el-verificador-sintético-toolscliente-sintetico) · [Edición pública: snapshots, addons y recursos del cliente](#edición-pública-snapshots-addons-y-recursos-del-cliente-pub04-y-pub04-i) · [Procedencia de mapas e iconos](#procedencia-de-mapas-e-iconos) · [Cliente web del navegador](#cliente-web-del-navegador-web-client)
 
 ---
 
@@ -4060,3 +4060,102 @@ python tools/extract-item-icons.py --client "/ruta/al/cliente"
 Las referencias de icono sin arte en el cliente (48 en la última generación) usan el
 recurso genérico del panel. Los hashes de los DBC y la lista de MPQ consultados
 identifican el cliente con el que se generó.
+
+## Cliente web del navegador (`web-client/`)
+
+Uso y opciones: `INSTALL_ES.md`, «Cliente web del navegador (fase 10, opcional)». Aquí, cómo
+está montado y qué hay que saber si algo falla.
+
+**Piezas y dónde viven** (la fase las instala con `./install.sh --webclient`):
+
+| Qué | Dónde | Notas |
+|---|---|---|
+| Build desplegado | `/var/lib/azerothcore-play/releases/<id>/`, enlace `current` | `id` = `build.json` o hash; se guardan 3; revertir = repuntar `current` |
+| Ficheros del juego | `/var/lib/azerothcore-play/datos/` | sólo enlaces a `.MPQ` + `manifiesto.tsv` (`generar-manifiesto.py`) |
+| Cliente base (WEB-PANEL) | `WEB_CLIENT_DATA_DIR` (por defecto `/var/lib/azerothcore-play/base`) | lo sube un administrador desde el panel (menú «Cliente web», paso 0); el servicio del panel escribe en él, en `datos/` y en `WEB_CLIENT_ROOT` por el grupo del usuario de AzerothCore (`ReadWritePaths=` de su unidad, carpetas 2775) |
+| Puente | `azerothcore-web-bridge.service`, `/opt/azerothcore-web-bridge/puente-ws.py` | 127.0.0.1:8765; sin privilegios; `IPAddressAllow=localhost` |
+| nginx | `/etc/azerothcore-panel/play.d/play.conf` | lo incluye el servidor HTTPS del panel; sin el `include` (panel anterior) la fase se niega a seguir |
+| Página de entrada | `releases/<id>/index.html` (de `web-client/play/index.html`) | comprueba HTTPS, `crossOriginIsolated`, WebGPU+BC, manifiesto, puente y `build.json` |
+
+**Rutas de `/play/`:** `/play/` y `/play/<fichero>` salen del build; `/play/datos/<mpq>` de los
+enlaces (con `Range`); `/play/datos/manifiesto.tsv` sin caché;
+`/play/ws?port=<N>` es el WebSocket del puente (sólo 3724 y 8085 por defecto); `/play/estado` es
+el contador del puente. El cliente usa rutas **relativas** a la página (`datos/`, `wgsl/`,
+`ws?port=`), por eso el mismo build funciona colgado de cualquier carpeta; `?bridge=host:puerto`
+sustituye el puente (pruebas) y `?perfil=<id>` elige un perfil de contenido (sin parámetro, el único de hoy, «base»: la `Data` del servidor tal cual).
+
+**Cliente base desde el panel (WEB-PANEL).** `web-panel/src/clienteWeb.js` y `routes/clienteWeb.js`; cliente
+en `web-panel/public/subida-cliente.js` y `views/clientWeb.js`. API: `GET /api/cliente-web/estado` (cualquier cuenta: `disponible`,
+`configurado`, `activo`; el administrador además `base`, `interruptor`, `subida`, `libre`); sólo administradores y con
+`X-Panel-Request`: `POST /api/cliente-web/subida` (lista `[ruta, tamaño]`; reanuda si es la misma lista, 409 si es otra y
+`reiniciar` no es true, 507 si no hay sitio salvo `borrarAntes`), `PUT .../subida/archivo?ruta=&desde=` (trozo ≤ 16 MiB con
+`X-Chunk-Sha256`; 409 con `recibido` si la posición no coincide, 422 si la huella no cuadra), `POST .../subida/confirmar`,
+`DELETE .../subida`, `POST /api/cliente-web/activo`. Reglas: sólo `*.MPQ` de `Data` y de `esES/`/`enUS/`; los nombres del reino
+(`RESERVED`, los mismos que `generar-manifiesto.py`) se ignoran; deben estar `common`, `expansion`, `lichking`, `patch` y un
+`locale-<idioma>.MPQ`; los trozos van a `WEB_CLIENT_DATA_DIR/.subida/<ruta>.parte` y sólo al confirmar (todo recibido y con
+cabecera MPQ) se mueven a su sitio, se borra el cliente base anterior (menos lo reservado) y se ejecuta
+`generar-manifiesto.py --permitir-vacio`. «Configurado» se deduce de los ficheros, no de un registro, así que una instalación
+anterior al panel ya consta. **Activo** = no existe `WEB_CLIENT_ROOT/desactivado`: `nginx-play.conf` responde 503 en `/play/`,
+`/play/datos/` y `/play/ws` (no en el manifiesto, que el panel usa para comprobar la carpeta local). nginx del panel: la ruta
+`/api/cliente-web/subida/archivo` admite 18 MiB y no almacena el cuerpo; el resto del panel sigue en 16k. Un cliente web instalado
+con una versión anterior necesita repetir `./install.sh --panel` y `--webclient` (permisos, variables y la marca de nginx).
+
+**Cosas que han dado guerra:**
+
+- Los hilos de WebAssembly exigen **contexto seguro y aislamiento de origen cruzado**: HTTPS (con la
+  CA del panel instalada en el dispositivo) y las tres cabeceras COOP/COEP/CORP en cada respuesta
+  bajo `/play/`, incluidas las de `datos/` y `ws`. Un `add_header` dentro de un `location` anula los
+  del nivel superior, así que cada `location` de `nginx-play.conf` repite las suyas.
+- `systemctl reload nginx` y el reinicio del puente son asíncronos: `deploy.sh` reintenta durante
+  10 s antes de dar por fallida una comprobación.
+- El puente ve todas las conexiones llegando desde 127.0.0.1; con `--confiar-proxy` (que pone la
+  unidad) usa `X-Real-IP` sólo cuando la conexión viene de 127.0.0.1. Sin ello el límite por IP
+  sería global.
+- Con el worldserver en espera (`WORLDSERVER_STANDBY`), el puente despierta la unidad al abrir el
+  túnel de autenticación (`--wake-state`, `--wake-port`, `--wake-espera`): sólo conecta un instante
+  con el puerto 8085 (activación por socket) y lee `/run/azerothcore/worldserver.state` (el que
+  escribe la unidad y lee el panel); no usa `sudo` ni `systemctl`, que falla dentro del sandbox de
+  `DynamicUser` («Transport endpoint is not connected»).
+- **Perfiles de contenido (30/10/2026):** hoy hay uno solo, «base», y es la `Data` del servidor tal cual:
+  un cliente 3.3.5a **limpio** (los MPQ de `common` a `patch-3` de ChromieCraft sin ningún paquete HD ni
+  parche de terceros) con las carpetas `esES/` y `enUS/`, más lo propio (`custom.MPQ`, que el cliente web
+  necesita para los `DetailDoodad`, y `esES/patch-esES-4.MPQ` / `enUS/patch-enUS-4.MPQ` de `cliente/Data/`,
+  regenerados contra esa base con `tools/construir-parche-cliente-items.py`). El cliente web fuerza
+  `locale esES`; `enUS` está en el servidor para un futuro selector de idioma. La página muestra una tarjeta
+  por perfil y envía `?perfil=<id>` salvo en «base». El cliente conserva el mecanismo de
+  `?perfil=base` con lista de ocultas (`perfil-base.tsv`, ya no se genera ni se sirve) por si vuelve un perfil
+  con paquetes extra; para ofrecer otro basta una tarjeta nueva en `web-client/play/index.html` y sus MPQ.
+- El navegador guarda, por origen, **dos cosas**: la configuración del juego (IndexedDB `wow-web`: atajos, posiciones, resolución de Vídeo) y una **caché en dos niveles de los bloques de la `Data` ya descargados**: en disco (OPFS, carpeta `wow-bloques`: segmentos `seg2-*.bin` con su índice `idx-*.bin`, que se leen a demanda en ~1 ms sin copiarse a la memoria al arrancar) y una reserva pequeña en memoria (384 MB, 768 MB o 1,5 GB según `navigator.deviceMemory`; el heap de wasm32 no pasa de 4 GB). El presupuesto de disco es de hasta 24 GB y como mucho la mitad de la cuota del navegador (se borran los segmentos más viejos que no quepan). La caché HTTP del navegador no sirve para las peticiones `Range`; por eso la propia. Si cambia la `Data` del servidor (`manifiesto.tsv`), se descarta sola; `?cache=0` la desactiva (sólo red y memoria) y borrar los datos del sitio empieza de cero. El enlace manda: a ~11 MB/s, la primera visita tarda ~25–35 s en entrar al mundo (pantalla de carga) y dentro del mundo en frío el juego no se para: lo que falta se baja en segundo plano y la precarga cede la red al juego. «Preparar el juego» baja las listas de precarga de todas las zonas grabadas (desde el 04/11/2026: 37 listas, unos 2,4 GB, varios minutos; antes 127 MB con tres listas) y es la única precarga: «Preparar todo el juego» (toda la `Data`, ~18 GB) se retiró el 04/11/2026 para no saturar de peticiones al servidor. En juego, la precarga en segundo plano elige las listas por la zona del personaje (`precarga/zonas.tsv`: id de zona → lista propia y vecinas); con las zonas preparadas, la pantalla de acceso tarda ~3 s y la entrada al mundo ~4 s.
+- **Consola del navegador y opciones del juego (31/10/2026).** En la versión final la consola de F12 va en silencio (no sale ningún registro del juego ni del dispositivo gráfico); con `?debug=1` en la dirección se activan, para diagnosticar. Las opciones de Vídeo son las del cliente original: la `Data` del servidor lleva un `custom.MPQ` para la web sin `Interface\FrameXML\VideoOptionsAdvanced.lua` (la página «Avanzado» del cliente mejorado, con niebla volumétrica, nubes, sombras de sol…), y la configuración (`Config.wtf`) fuerza a 0 los 23 extras de ese cliente en cada arranque porque el dispositivo WebGPU no los tiene. Si en el futuro se ofrece alguno, va como perfil con su página de opciones, no como interruptores sueltos.
+- **Cliente local (04/11/2026).** Es un origen de datos más, por usuario: la carpeta `Data` (o la de `Wow.exe`) se
+  elige con el selector de carpetas del navegador y su *handle* se guarda en IndexedDB (`azeroth-cliente-local`, mismo
+  origen que `/play/`); nunca llega al servidor. `manifiesto.tsv` lleva una columna `servidor` que marca los MPQ propios
+  del reino: esos se leen siempre del servidor y van los últimos en la cadena de carga; el resto se toma de la carpeta
+  local **si existe, sin comparar tamaño ni contenido** (el cliente del usuario es otro y es normal que difiera) y sólo lo que
+  falta lo pone el servidor. Los MPQ propios del usuario se usan salvo que su nombre coincida con uno del manifiesto o de la
+  lista de reservados (entonces se tratan como ese fichero). El panel (menú «Cliente local» → «Cliente web») resume qué sale
+  del equipo y qué del servidor y activa o no la tarjeta de `/play/`, que sólo se ofrece si está configurado y activado.
+  Brave informa siempre de una cuota de 2 GiB (anti-huella) aunque deja escribir más: una cuota de exactamente 2 GiB no
+  recorta el presupuesto de disco (tope de 8 GB).
+- **Mejoras gráficas y ecualizador.** Todas las opciones son CVars que registra el motor y se guardan en `Config.wtf`
+  (IndexedDB) como cualquier otra: `mg*` para la imagen (`mgRenderScale`, `mgUpscaler`, `mgSharpen`, `mgAntiAlias`,
+  `mgMSAA`, `mgExposure`… `mgAO`, `mgWater`) y `eqEnabled` + `eq<Canal><1-5>` para el sonido (canales `Sfx`, `Music`,
+  `Ambience`, `Cinematic` y `Master`; ganancia en dB, −12 a 12; por defecto todo a 0 y apagado). Las páginas de opciones
+  son Lua del `custom.MPQ` web (el mismo archivo sirve a Vídeo y a Sonido). **Ecualizador:** cada sonido del juego suma en
+  el canal de su grupo (`MUSIC` y `SCRIPTMUSIC` → música, `AMBIENCE` → ambiente, `CINEMATIC` y `RACIALCINEMATIC` → cine y todo
+  lo demás, incluidos diálogos y pasos que el motor original mete en `SFX`, → efectos y voces); con `eqEnabled` cada canal y
+  después el conjunto pasan por cinco filtros biquad (estante de graves a 100 Hz, campanas de Q = 1 a 350 Hz, 1,2 kHz y
+  4 kHz, estante de agudos a 10 kHz) y un limitador suave que sólo actúa por encima de 0,8 (subir bandas puede saturar la
+  suma). Las ganancias se acercan a su objetivo a 1,5 dB por bloque de mezcla (~11 ms) para que arrastrar un control no
+  chasquee; con el ecualizador apagado la mezcla es la de siempre. `Module.sonidoEstado()` (consola con `?debug=1`) incluye
+  `busVoces` y `busPico` (voces activas y pico tras el ecualizador de cada canal), útiles para comprobar a qué canal va
+  un sonido. **Cómo se verificó:** el DSP con una prueba de barrido de senos en el PC (ganancia por banda, suavizado,
+  limitador y estabilidad a ±12 dB) y el conjunto en el navegador comparando el pico de cada canal con el ecualizador apagado
+  y con sólo ese canal a −12 dB (−10 a −13 dB en el canal tocado, sin cambio en los demás). La lista «Multimuestreo» original
+  de Resolución (en realidad una lista de formatos, con una sola fila) se oculta desde ese mismo Lua; el MSAA real es
+  `mgMSAA` en Mejoras gráficas.
+- Para pruebas con certificado propio: un navegador lanzado con `ignoreHTTPSErrors` sirve; el
+  navegador de Playwright MCP no, porque no confía en la CA del panel.
+
+**Pruebas:** `python3 web-client/test_puente.py` (puente con servidor de eco: reenvío, puerto y
+origen no permitidos, límites por IP y `X-Real-IP`) y `./install.sh --doctor` (`web-client`).

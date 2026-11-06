@@ -1,19 +1,19 @@
 # MANIFEST.tsv — copias offline de los repositorios de terceros
-# Generado por ./install.sh --mirror el 2026-10-28 12:28:08
+# Generado por ./install.sh --mirror el 2026-11-06 14:13:34
 #
 # nombre                      	commit                                  	tamano      	fichero
 core	3f2969ddb0da42b48b4fca050c02b19163ba1e20	224362911	core@3f2969ddb0da.tar.gz	d31182a3da9769c4d0d514e78f26c367e61be123860fd9d04d08eded90ce3368	https://github.com/mod-playerbots/azerothcore-wotlk.git
 mod-1v1-arena	5ef5708d031f3b02283e6e599aa655bd320d904e	372516	mod-1v1-arena@5ef5708d031f.tar.gz	39dc3e18268c21c922bee24109fe297707c2c46084614f9b1b7acc1276670449	https://github.com/azerothcore/mod-1v1-arena.git
 mod-ah-bot-plus	f685832994c825f90aa5a3dc0e1620aa568e875b	468119	mod-ah-bot-plus@f685832994c8.tar.gz	e2dc60d56416b9de8ef5568fcdf18bbbd92b9bd1428826d6b123c4184eb0d2ea	https://github.com/NathanHandley/mod-ah-bot-plus.git
-mod-aoe-loot	44486b1aecebd86944ce115972b3c839544903d3	32825	mod-aoe-loot@44486b1aeceb.tar.gz	a4d8160281ab9d7ad75b3bb9376845a98943b31cd66c302e68a8e73fb974e7cb	https://github.com/azerothcore/mod-aoe-loot.git
+mod-aoe-loot	957f9a1a686141d96c8b55e9431bfe2a0fb26e46	32950	mod-aoe-loot@957f9a1a6861.tar.gz	4ea384ed4a1a9bac7bba4b126ee302283140f9c7bd5f3b536e4b1555e6dbc970	https://github.com/azerothcore/mod-aoe-loot.git
 mod-autobalance	1d707cb61a0962ab01e4123681e2d3b66cc558a2	107942	mod-autobalance@1d707cb61a09.tar.gz	a2299294db704acd3a7471c01b31afc2f05ab97df34958f1fa104eda80e2129a	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	1930525b9530d329cb9fe0504a3c9b5b40a12261	10752	mod-challenge-modes@1930525b9530.tar.gz	465dc529aa7f2255675d552da87e4f9429510e829b6513fef017bfab190f47e1	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
 mod-congrats-on-level	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	19364	mod-congrats-on-level@fed4752e0cd7.tar.gz	2bdb0476c3d822f599b5de81949a87c761efed703805f781932042a41afbab34	https://github.com/azerothcore/mod-congrats-on-level.git
-mod-dungeon-clear	7fb6ebdefb8038af2676c280214f8a15c843b347	3377189	mod-dungeon-clear@7fb6ebdefb80.tar.gz	b03e4da5fb2de3093abe961be5ebfb08fd4e79af7ffa068abee98a64d1e20546	https://github.com/jrad7/mod-dungeon-clear.git
+mod-dungeon-clear	0dfe558d6370d8b8bd94bba2ad75374975f2a833	3386196	mod-dungeon-clear@0dfe558d6370.tar.gz	1c7fc6f6dbd676abb688cb1e46b22c176c6bca7caf8329e8a400c02cc1f1023f	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	612eaf804cd7fc4af74fde66d376a571a5550077	86625	mod-dungeon-master@612eaf804cd7.tar.gz	f56ef9a78421703002ee769ade87562c0e583b8454218135035a191b303035c5	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guildhouse	0b3cc14e947a859f8a7751a10676107d6316275b	32680	mod-guildhouse@0b3cc14e947a.tar.gz	e000cdaea194472108490a6b9704420119ef75f7571db8659b255e2140d760fc	https://github.com/azerothcore/mod-guildhouse.git
 mod-guild-levels	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	16881	mod-guild-levels@f1ef557a7e93.tar.gz	b5b4477c182afa248c5e24eb6ef3b57e63766c0ee245d5abe50fc7207cb575e3	https://github.com/Old-Man-Warcraft/mod-guild-levels.git
-mod-individual-progression	4933d455d2f611eed50c74c68c78832df4ed37a3	36313185	mod-individual-progression@4933d455d2f6.tar.gz	a5e76f54667fa5ef613acfe61ed37b0316a90e935f8fb47097fd8ff322e2ab0c	https://github.com/ZhengPeiRu21/mod-individual-progression.git
+mod-individual-progression	e1795553d381e561ab5f37585566c22e23cdff73	36313443	mod-individual-progression@e1795553d381.tar.gz	8715660303c65930edec96c5ec1947b060f21541a1c685da2a9ec3942076274b	https://github.com/ZhengPeiRu21/mod-individual-progression.git
 mod-instanced-worldbosses	4c7a6310a748c199f79d7be2bbdcbc3191985bdc	11051	mod-instanced-worldbosses@4c7a6310a748.tar.gz	289b4e0635e6e6b8105fc8369675eeb65c9d87a38fef272a8393628f933ec4ab	https://github.com/azerothcore/mod-instanced-worldbosses.git
 mod-instance-reset	1e2c20770f40f5382348b7649291371f47c86812	8181	mod-instance-reset@1e2c20770f40.tar.gz	ba1db177e6e08598a3b54e76a6106c963ae5886da3cf1e2d7b2ade46b7d88bd6	https://github.com/azerothcore/mod-instance-reset.git
 mod-playerbots	e88cc4099e69f35126b28942a412ca702d20453b	21856587	mod-playerbots@e88cc4099e69.tar.gz	5cc5067b0e714bfa02476b60bf897ed6c2e77b1932981dbbc0f5c45755dc2a7e	https://github.com/mod-playerbots/mod-playerbots.git
@@ -24,7 +24,7 @@ mod-racial-trait-swap	8ae1e6fab13b4660eed76aca8fce998a18343048	577568	mod-racial
 mod-random-enchants	6d49d64918f1e798490d0139038a33194fd294df	8679	mod-random-enchants@6d49d64918f1.tar.gz	a220fca15fa8dff99d8cc0a4cf36d6cf3f4df7ac747b89f838bce58589c11f9c	https://github.com/azerothcore/mod-random-enchants.git
 mod-reagent-bank	62c265338ceba10fb754394413e6c4c61cedf9de	7483	mod-reagent-bank@62c265338ceb.tar.gz	a5fa3d205fed8feee64065896ce40832b2b663f13d9cbdee283702bb9e7fbebb	https://github.com/ZhengPeiRu21/mod-reagent-bank.git
 mod-token-turnin	73e447c499751559549e129a39c58c42fe661e73	2468744	mod-token-turnin@73e447c49975.tar.gz	ec34485f6da447387a60b8239c3d8920afcae0dc2db30e6bd6eca050f0741c7d	https://github.com/Zerathane/mod-token-turnin.git
-mod-transmog	327753a05b9024f2a90738bb08e9b8afc2fc9a21	104179	mod-transmog@327753a05b90.tar.gz	854fe662a34c6fdcc5bfeb90988ae1e10f70e0f4ca2561053a2308f80a5db9e2	https://github.com/azerothcore/mod-transmog.git
+mod-transmog	d309745c9151ff2ea4202204c1efa991848414bf	104790	mod-transmog@d309745c9151.tar.gz	6b93382e895f06fca5232c357aea32d7170466d5285dd8e62bbd2c58121b6020	https://github.com/azerothcore/mod-transmog.git
 mod-war-effort	512a2dd97e6589482148ed870dc67e7292a8c5ac	23307	mod-war-effort@512a2dd97e65.tar.gz	3f54c3d783d3ca6ad0675ebabbdbd9594ee6036e2f7f7320fb30ba4b10890eb6	https://github.com/azerothcore/mod-war-effort.git
 mod-world-buff-bots	baae5656aa6a375e103bc83da8262f2061dbfcb6	4671	mod-world-buff-bots@baae5656aa6a.tar.gz	9b30dca36064ca7180809e0602609117f99721d0b5d7fdb56e31bb562b723a2c	https://github.com/Rockhopper1776/mod-world-buff-bots.git
 mod-arac	3f605e09c656eb3b620ef2d70c7ef61808c1cfb0	3035348	mod-arac@3f605e09c656.tar.gz	cac863706ddba3fcf372cae2a587b69442e6de8beeeeea06f6b17dd26de36e55	https://github.com/heyitsbench/mod-arac.git

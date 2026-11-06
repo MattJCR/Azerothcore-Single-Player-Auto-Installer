@@ -61,11 +61,13 @@
       </div>
       <nav aria-label="Secciones">
         <p class="nav-section-label">Tu experiencia</p>
+        <a id="play-nav" class="nav-extern hidden" href="/play/"><span class="nav-symbol">▶</span>Jugar en el navegador</a>
         <button class="nav-item active" data-view="players"><span class="nav-symbol">◈</span>Jugadores</button>
         <button class="nav-item" data-view="social-map"><span class="nav-symbol">⌖</span>Mapa</button>
         <button class="nav-item" data-view="armory"><span class="nav-symbol">⛨</span>Armería</button>
         <button class="nav-item" data-view="help"><span class="nav-symbol">?</span>Comandos</button>
-        <button class="nav-item" data-view="addons"><span class="nav-symbol">+</span>Addons</button>
+        <button class="nav-item" data-view="addons"><span class="nav-symbol">+</span>Cliente local</button>
+        <button class="nav-item" data-view="client-web"><span class="nav-symbol">▣</span>Cliente web</button>
         <p id="gm-nav-label" class="nav-section-label hidden">Herramientas GM</p>
         <button id="map-nav" class="nav-item hidden" data-view="map"><span class="nav-symbol">⌖</span>Mapa GM <span class="gm-pill">GM</span></button>
         <button id="moderation-nav" class="nav-item hidden" data-view="moderation"><span class="nav-symbol">⚑</span>Moderación <span class="gm-pill">GM</span></button>
@@ -374,6 +376,117 @@
           </div>
           <div id="install-progress" class="install-progress hidden"><i></i><span>Preparando…</span></div>
         </div>
+      </section>
+
+      <section id="client-web-view" class="view hidden">
+        <div class="addons-intro">
+          <div>
+            <p class="eyebrow">CLIENTE WEB · /play/</p>
+            <h3>Juega en el navegador</h3>
+            <p>Prepara el cliente base en el servidor, indica dónde está tu cliente local si lo tienes y actívalo. Todo en una sola pantalla.</p>
+          </div>
+        </div>
+
+        <div id="cw-unavailable" class="installer-notice hidden">
+          <div><strong>Cliente web no instalado</strong><p>Este servidor no tiene el cliente web (fase 10 del instalador). Cuando lo tenga, aquí podrás subir el cliente base.</p></div>
+        </div>
+
+        <!-- Asistente (primera instalación o actualización del cliente base): sólo administradores -->
+        <section id="cw-wizard" class="hidden" aria-label="Asistente del cliente base">
+          <ol class="cw-progress" aria-label="Progreso">
+            <li class="current"><span class="cw-dot">0</span><span><strong>Cliente base</strong><small>En curso · administradores</small></span></li>
+            <li><span class="cw-dot">1</span><span><strong>Tu cliente local</strong><small>Después de subir el base</small></span></li>
+            <li><span class="cw-dot">2</span><span><strong>Activar</strong><small>Después de subir el base</small></span></li>
+          </ol>
+          <div class="cw-wizard-grid">
+            <div class="cw-card cw-upload">
+              <h3>Sube el cliente base al servidor</h3>
+              <p data-i18n-html>Elige la carpeta <strong>Data</strong> de un cliente 3.3.5a. Se sube una sola vez y todos los jugadores lo comparten.</p>
+              <div class="cw-chips"><span>Recomendado: vanilla</span><span>esES</span><span>enUS</span></div>
+              <div class="cw-pick">
+                <span class="cw-pick-icon" aria-hidden="true">▤</span>
+                <div><strong id="cw-up-name">Ninguna carpeta elegida</strong><small id="cw-up-detail">Sólo necesita permiso de lectura. Los ficheros viajan por HTTPS y la subida se puede pausar y reanudar.</small></div>
+                <button id="cw-up-choose" class="secondary-button" type="button">Elegir carpeta…</button>
+              </div>
+              <label id="cw-up-wipe-row" class="cw-check hidden"><input id="cw-up-wipe" type="checkbox"><span>Borrar el cliente actual antes de subir (para que quepan los dos)</span></label>
+              <div id="cw-up-progress" class="cw-up-progress hidden">
+                <div id="cw-up-bar" class="cw-bar" role="progressbar" aria-label="Progreso de la subida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="cw-up-fill"></div></div>
+                <div class="cw-up-meta"><span id="cw-up-count"></span><span id="cw-up-speed"></span></div>
+              </div>
+              <p id="cw-up-message" class="cw-note" role="status"></p>
+              <div class="cw-actions">
+                <button id="cw-up-start" class="primary-button" type="button" disabled>Subir al servidor</button>
+                <button id="cw-up-pause" class="secondary-button hidden" type="button">Pausar</button>
+                <button id="cw-up-cancel" class="secondary-button hidden" type="button">Cancelar subida</button>
+                <button id="cw-up-back" class="secondary-button hidden" type="button">Volver sin cambiar</button>
+              </div>
+              <label class="cw-check"><input id="cw-up-activate" type="checkbox" checked><span>Activar el cliente web para todos al terminar</span></label>
+            </div>
+            <aside class="cw-next" aria-label="Qué viene después">
+              <div class="cw-locked"><strong>Paso 1 · Tu cliente local</strong><p>Opcional. Elige tu propia carpeta para jugar sin bajar nada base. Se aceptan clientes con mejoras gráficas.</p></div>
+              <div class="cw-locked"><strong>Paso 2 · Activar</strong><p>Un check en la tarjeta del paso 1 ofrece «Cliente local» en /play/ para este navegador.</p></div>
+              <div class="cw-locked"><strong>Comprobaciones del cliente</strong><p>Aparecen al elegir tu carpeta: qué se lee de tu equipo, qué pone el servidor y qué MPQ propios se cargan.</p></div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- Pantalla habitual: tres pasos en una tarjeta -->
+        <section id="cw-steps" class="cw-steps hidden" aria-label="Pasos">
+          <div id="cw-step0" class="cw-step">
+            <div class="cw-rail"><span id="cw-s0-dot" class="cw-dot">0</span><i></i></div>
+            <div class="cw-step-body">
+              <div class="cw-step-title"><h3>Paso 0 · Cliente base del servidor</h3><span class="cw-badge cw-admin-only">Sólo administradores</span><span id="cw-s0-pill" class="cw-pill"></span></div>
+              <p data-i18n-html>Es el cliente que el servidor ofrece por defecto a quien no tiene el suyo. Lo más rápido es un cliente <strong>vanilla con los idiomas esES y enUS</strong>.</p>
+              <div class="cw-inline-card">
+                <span class="cw-pick-icon" aria-hidden="true">▤</span>
+                <div><strong id="cw-s0-title"></strong><small id="cw-s0-detail"></small></div>
+                <button id="cw-s0-update" class="secondary-button cw-admin-only" type="button">Actualizar cliente base…</button>
+              </div>
+              <p class="cw-hint cw-admin-only">Actualizar borra el cliente anterior y sube el nuevo. Antes te pide confirmación.</p>
+              <label class="cw-check cw-admin-only"><input id="cw-s0-active" type="checkbox"><span>Cliente web activo para todos los jugadores</span></label>
+              <p id="cw-s0-waiting" class="cw-hint hidden">El administrador todavía no ha preparado el cliente base del servidor. Mientras tanto no se puede jugar en el navegador.</p>
+            </div>
+          </div>
+
+          <div id="cw-step1" class="cw-step">
+            <div class="cw-rail"><span id="cw-s1-dot" class="cw-dot">1</span><i></i></div>
+            <div class="cw-step-body">
+              <div class="cw-step-title"><h3>Paso 1 · Indica dónde está tu cliente local</h3><span class="cw-badge">Opcional · sólo en este navegador</span></div>
+              <p>Con tu propio cliente no hay que bajar nada base y carga más rápido. Se aceptan clientes con mejoras gráficas. Elige la carpeta de Wow.exe o la propia carpeta Data: el navegador sólo pide permiso de lectura y no se copia ni se sube nada. Como en "Cliente local", la primera vez hace falta el certificado del panel.</p>
+              <div id="cw-installer" class="cw-inline-card">
+                <span class="cw-pick-icon" aria-hidden="true">▤</span>
+                <div><strong>Lectura local</strong><small id="cw-folder-status">Elige la carpeta de Wow.exe o la propia carpeta Data.</small></div>
+                <div class="installer-actions">
+                  <button id="cw-choose-folder" class="secondary-button" type="button">Elegir carpeta de WoW o Data</button>
+                  <button id="cw-rescan" class="secondary-button" type="button" disabled title="Vuelve a comprobar la carpeta contra los ficheros del servidor">Comprobar de nuevo</button>
+                  <button id="cw-forget" class="secondary-button" type="button" disabled>Quitar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="cw-step2" class="cw-step">
+            <div class="cw-rail"><span id="cw-s2-dot" class="cw-dot">2</span></div>
+            <div class="cw-step-body">
+              <div class="cw-step-title"><h3>Paso 2 · Activar el uso del cliente local</h3></div>
+              <p data-i18n-html>Si lo activas, la página <strong>/play/</strong> ofrece "Cliente local" junto a "Cliente del servidor". En /play/ el navegador te pedirá un clic de permiso por sesión para leer la carpeta. Lo que falte en tu carpeta lo pone el servidor.</p>
+              <label class="cw-check cw-enable-card"><input id="cw-enabled" type="checkbox" disabled><span>Ofrecer el cliente local en /play/ en este navegador</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section id="cw-summary-panel" class="cw-checks hidden" aria-labelledby="cw-summary-title">
+          <div class="cw-checks-head"><h3 id="cw-summary-title">Comprobaciones del cliente</h3><span id="cw-summary-date"></span></div>
+          <div class="cw-tiles">
+            <div class="cw-tile"><small>Desde tu equipo</small><b id="cw-tile-local" class="good"></b><span id="cw-tile-local-size"></span></div>
+            <div class="cw-tile"><small>Desde el servidor</small><b id="cw-tile-server" class="warm"></b><span id="cw-tile-server-size"></span></div>
+            <div class="cw-tile"><small>MPQ propios</small><b id="cw-tile-custom"></b><span id="cw-tile-custom-note"></span></div>
+            <div class="cw-tile"><small>Ignorados</small><b id="cw-tile-ignored"></b><span>nombre del servidor</span></div>
+          </div>
+          <div class="cw-split" aria-hidden="true"><i id="cw-split-local"></i><i id="cw-split-server"></i></div>
+          <div class="cw-legend"><span><i class="good"></i><span id="cw-legend-local"></span></span><span><i class="warm"></i><span id="cw-legend-server"></span></span></div>
+          <ul id="cw-summary" class="cw-summary"></ul>
+        </section>
       </section>
 
       <section id="account-view" class="view hidden">

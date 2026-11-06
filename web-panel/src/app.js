@@ -12,6 +12,7 @@ import { parseCookie, readSession } from './session.js';
 import { addonCatalog, findAddon, sendAddonZip } from './addons.js';
 import { createPatchCatalog } from './patches.js';
 import { createResourceStore } from './resources.js';
+import { createClienteWebStore } from './clienteWeb.js';
 import { useIconSource } from './item-icons.js';
 import { soapClient as defaultSoapClient } from './soap.js';
 import { languageMiddleware, translate } from './i18n.js';
@@ -29,6 +30,7 @@ import { registerServerConfigRoutes } from './routes/serverConfig.js';
 import { registerBotOperationsRoutes } from './routes/botOperations.js';
 import { registerContentRoutes } from './routes/content.js';
 import { registerResourceRoutes } from './routes/resources.js';
+import { registerClienteWebRoutes } from './routes/clienteWeb.js';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const publicDirectory = path.join(root, '..', 'public');
@@ -63,6 +65,10 @@ export function createApp(overrides = {}) {
     python: config.pythonCommand,
     iconsScript: config.iconsScript,
     patchScript: config.patchScript,
+  });
+  // Cliente base del cliente web (WEB-PANEL): sin WEB_CLIENT_DATA_DIR/WEB_CLIENT_ROOT queda como «no disponible».
+  const clienteWeb = overrides.clienteWeb || createClienteWebStore({
+    dataDirectory: config.webClient.dataDirectory, root: config.webClient.root, python: config.pythonCommand, manifestScript: config.webClient.manifestScript,
   });
   useIconSource(() => resources.iconManifest());
   const { findPatch, patchCatalog } = createPatchCatalog(resources);
@@ -227,6 +233,11 @@ export function createApp(overrides = {}) {
   // Preparación de recursos desde el cliente del jugador (PUB04-I): sólo administradores.
   registerResourceRoutes(app, {
     requireAuth, requireAdmin: requireGmLevel(3, 'Se requiere una cuenta de administrador'), requireCsrfHeader, noStore, audit, clientKey, resources,
+  });
+
+  // Cliente base del cliente web (WEB-PANEL): estado para todas las cuentas, subida y activación sólo para administradores.
+  registerClienteWebRoutes(app, {
+    requireAuth, requireAdmin: requireGmLevel(3, 'Se requiere una cuenta de administrador'), requireCsrfHeader, noStore, audit, clientKey, currentGmLevel, clienteWeb,
   });
 
   // Jugadores conectados y mapa GM, extraídos a routes/players.js.

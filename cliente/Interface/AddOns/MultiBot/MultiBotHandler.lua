@@ -117,6 +117,7 @@ MultiBot:SetScript("OnEvent", function()
 			MultiBot.ApplyBarSettings(tonumber(MultiBotSave["MultiBarScale"]), MultiBotSave["MultiBarLocked"] == "true")
 		end
 
+		local tPlaced = false
 		if(MultiBotSave["MultiBarPoint"] ~= nil) then
 			local tPoint = MultiBot.doSplit(MultiBotSave["MultiBarPoint"], ", ")
 			local tX, tY = tonumber(tPoint[1]), tonumber(tPoint[2])
@@ -125,11 +126,19 @@ MultiBot:SetScript("OnEvent", function()
 			-- corrupto de antes de este cambio), se descarta y se usa el
 			-- valor por defecto en vez de arrastrar la barra fuera de la vista.
 			if(tX ~= nil and tY ~= nil and tX >= 0 and tX <= GetScreenWidth() and tY >= 0 and tY <= GetScreenHeight()) then
-				MultiBot.setAbsolutePoint(MultiBot.frames["MultiBar"], tX, tY)
+				-- ClampBarRight: una posición guardada con el valor por defecto antiguo (-262) dejaba el engranaje y
+				-- su panel (candado) fuera de la pantalla.
+				MultiBot.setAbsolutePoint(MultiBot.frames["MultiBar"], MultiBot.ClampBarRight(tX), tY)
+				tPlaced = true
 			else
-				MultiBot.resetPoint(MultiBot.frames["MultiBar"], -262, 144)
 				MultiBotSave["MultiBarPoint"] = nil
 			end
+		end
+
+		-- Sin posición guardada (o descartada): la de por defecto (-262, 144), corrida a la izquierda lo justo para que
+		-- el engranaje de ajustes y su panel quepan en la pantalla.
+		if(not tPlaced) then
+			MultiBot.setAbsolutePoint(MultiBot.frames["MultiBar"], MultiBot.ClampBarRight(MultiBot:GetRight() - 262), MultiBot:GetBottom() + 144)
 		end
 
 		if(not IsAddOnLoaded("Blizzard_InspectUI")) then LoadAddOn("Blizzard_InspectUI") end

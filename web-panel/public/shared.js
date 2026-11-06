@@ -137,6 +137,7 @@ export function showApp(user) {
   stopRefreshPolling();
   runRefresh(); // primera pasada inmediata; a partir de ahí se autoprograma
   startServerStatusPolling();
+  viewRegistry['client-web']?.refreshPlayNav?.(); // «Jugar en el navegador»: sólo con el cliente base subido y activo
 }
 
 export function showLogin() {
@@ -482,7 +483,7 @@ export function showView(name) {
   $$('.view').forEach((view) => view.classList.add('hidden'));
   $(`#${name}-view`).classList.remove('hidden');
   $$('.nav-item').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
-  const titles = { map: t('Mapa del mundo'), 'social-map': t('Mapa'), addons: t('Addons del cliente'), help: t('Comandos y ayuda'), armory: t('Armería'), moderation: t('Moderación'), account: t('Mi cuenta'), metrics: t('Estado y rendimiento'), 'server-config': t('Configuración del servidor'), updates: t('Actualizaciones'), 'bot-ops': t('Operaciones de bots') };
+  const titles = { map: t('Mapa del mundo'), 'social-map': t('Mapa'), addons: t('Cliente local'), 'client-web': t('Cliente web'), help: t('Comandos y ayuda'), armory: t('Armería'), moderation: t('Moderación'), account: t('Mi cuenta'), metrics: t('Estado y rendimiento'), 'server-config': t('Configuración del servidor'), updates: t('Actualizaciones'), 'bot-ops': t('Operaciones de bots') };
   $('#page-title').textContent = titles[name] || t('Jugadores conectados');
   setSidebarOpen(false);
   // Al cambiar de menú, la nueva sección arranca visible desde su inicio en
@@ -494,6 +495,7 @@ export function showView(name) {
   if (name === 'map') viewRegistry.map?.enter?.();
   if (name === 'social-map') viewRegistry['social-map']?.enter?.();
   if (name === 'addons') viewRegistry.addons?.enter?.();
+  if (name === 'client-web') viewRegistry['client-web']?.enter?.();
   if (name === 'help') viewRegistry.help?.enter?.();
   if (name === 'armory') viewRegistry.armory?.enter?.();
   if (name === 'moderation') viewRegistry.moderation?.enter?.();
@@ -510,11 +512,21 @@ export function showView(name) {
 }
 
 let toastTimer;
-export function showToast(message) {
+export function showToast(message, duration = 4000) {
   $('#toast').textContent = message;
   $('#toast').classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 4000);
+  toastTimer = setTimeout(() => $('#toast').classList.remove('show'), duration);
+}
+
+// Aviso cuando el navegador no tiene showDirectoryPicker. Brave la trae desactivada de serie (hay que activarla en brave://flags), así que
+// se le dice cómo; el resto de navegadores sin la API (Firefox, Safari) sólo pueden usar Chrome o Edge.
+export async function directoryPickerUnavailable() {
+  let brave = false;
+  try { brave = Boolean(await globalThis.navigator?.brave?.isBrave?.()); } catch { /* sin API de Brave */ }
+  showToast(brave
+    ? t('Brave trae desactivado el selector de carpetas. Abre brave://flags/#file-system-access-api, ponlo en Enabled y reinicia Brave.')
+    : t('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.'), 12000);
 }
 
 export function formValues(form) {

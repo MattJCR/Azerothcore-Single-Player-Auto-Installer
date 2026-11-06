@@ -30,6 +30,7 @@
 #    ./install.sh --fix        → Reparar configuración existente (fases 2+5)
 #    ./install.sh --post       → Pasos post-primer-arranque (fases 8-9)
 #    ./install.sh --panel      → Instalar o actualizar sólo el panel web
+#    ./install.sh --webclient  → Instalar o actualizar el cliente web del navegador (opcional)
 #    ./install.sh --help       → Ver esta ayuda
 #
 # =============================================================================
@@ -56,6 +57,7 @@ declare -A PHASES=(
     [7]="scripts/phases/07_automation.sh"
     [8]="scripts/phases/08_post_install.sh"
     [9]="scripts/phases/09_web_panel.sh"
+    [10]="scripts/phases/10_web_client.sh"
 )
 declare -A PHASE_NAMES=(
     [1]="Dependencias del sistema"
@@ -67,6 +69,7 @@ declare -A PHASE_NAMES=(
     [7]="Automatización (crontab y scripts)"
     [8]="Post-instalación (realmlist y cuenta GM)"
     [9]="Panel web (Nginx y systemd)"
+    [10]="Cliente web en el navegador (opcional)"
 )
 
 # =============================================================================
@@ -92,6 +95,7 @@ case "${1:-}" in
     --fix)    START_PHASE=2; END_PHASE=5 ;;   # Reparar: MySQL + conf
     --post)   START_PHASE=8; END_PHASE=9 ;;   # Post-primer-arranque + panel web
     --panel)  ONLY_PHASE=9 ;;                 # Instalar/actualizar panel web
+    --webclient) ONLY_PHASE=10 ;;             # Instalar/actualizar el cliente web (opcional, /play/)
     --mirror)
         # Regenera las copias offline de los repositorios instalados.
         mirror_all_repos
@@ -141,6 +145,7 @@ case "${1:-}" in
         echo -e "  --fix           Reparar instalación existente (MySQL + confs)"
         echo -e "  --post          Pasos tras el primer arranque (fases 8-9, incluido el panel web)"
         echo -e "  --panel         Instalar o actualizar sólo el panel web"
+        echo -e "  --webclient     Instalar o actualizar el cliente web del navegador (opcional, fase 10; ver INSTALL_ES.md)"
         echo -e "  --freeze        Congelar las versiones instaladas ahora en versions.lock"
         echo -e "  --mirror        Regenerar las copias offline de los repos en mirrors/"
         echo -e "  --hidratar [repo...]  Reconstruir en mirrors/ los snapshots verificados por SHA-256"
@@ -149,7 +154,7 @@ case "${1:-}" in
         echo -e "  --help          Ver esta ayuda"
         echo ""
         echo -e "  Fases disponibles:"
-        for N in $(seq 1 9); do
+        for N in $(seq 1 10); do
             echo -e "    $N — ${PHASE_NAMES[$N]}"
         done
         echo ""
@@ -168,14 +173,16 @@ esac
 #
 # El instalador está pensado para correr como el usuario del servidor (acore),
 # que escala a root con sudo sólo para los comandos que lo necesitan (o con el
-# NOPASSWD temporal de instalar-todo.sh). La única excepción es `--panel`:
-# 09_web_panel.sh sí necesita root y se re-lanza con sudo él solo.
+# NOPASSWD temporal de instalar-todo.sh). Las únicas excepciones son `--panel` y
+# `--webclient`: 09_web_panel.sh y 10_web_client.sh sí necesitan root y se re-lanzan
+# con sudo ellos solos.
 # =============================================================================
-if [ "$(id -u)" -eq 0 ] && [ "${ONLY_PHASE:-}" != "9" ]; then
+if [ "$(id -u)" -eq 0 ] && [ "${ONLY_PHASE:-}" != "9" ] && [ "${ONLY_PHASE:-}" != "10" ]; then
     error "No ejecutes el instalador como root."
     error "Hazlo con el usuario del servidor (p.ej. 'acore'); sudo se pide sólo cuando hace falta."
     error "  Instalación completa:  ./install.sh --guiado"
     error "  Sólo el panel web:     sudo ./install.sh --panel"
+    error "  Sólo el cliente web:   ./install.sh --webclient (pide sudo él solo)"
     exit 1
 fi
 
@@ -319,7 +326,7 @@ run_phase() {
 
     echo ""
     echo -e "${BOLD}${BLUE}  ┌───────────────────────────────────────────────┐${NC}"
-    echo -e "${BOLD}${BLUE}  │  Fase ${N}/9 — ${PHASE_NAMES[$N]}${NC}"
+    echo -e "${BOLD}${BLUE}  │  Fase ${N}/${#PHASES[@]} — ${PHASE_NAMES[$N]}${NC}"
     echo -e "${BOLD}${BLUE}  └───────────────────────────────────────────────┘${NC}"
     echo ""
 

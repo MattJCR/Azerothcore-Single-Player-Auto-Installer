@@ -432,6 +432,29 @@ PY
     fi
 }
 
+# Cliente web del navegador (fase 10, opcional): puente activo, nginx con /play/ y las cabeceras de aislamiento, build
+# desplegado y Data preparada. Un fallo no afecta al servidor de juego, pero el cliente web no funcionaria.
+_doctor_check_web_client() {
+    [ "${INSTALL_WEB_CLIENT:-false}" = true ] || return 0
+    local ROOT="${WEB_CLIENT_ROOT:-/var/lib/azerothcore-play}" PORT="${PANEL_HTTPS_PORT:-443}" BASE HDR ID PROBLEMS=()
+    if ! systemctl is-active --quiet azerothcore-web-bridge 2>/dev/null; then
+        PROBLEMS+=("el puente (azerothcore-web-bridge) no está activo")
+    fi
+    [ -f "$ROOT/current/build.json" ] || PROBLEMS+=("no hay build desplegado en $ROOT/current")
+    [ -f "$ROOT/datos/manifiesto.tsv" ] || PROBLEMS+=("falta $ROOT/datos/manifiesto.tsv (WEB_CLIENT_DATA_DIR)")
+    if command -v curl >/dev/null 2>&1; then
+        BASE="https://127.0.0.1"; [ "$PORT" = 443 ] || BASE="$BASE:$PORT"
+        HDR=$(curl -ksI --max-time 5 "$BASE/play/" 2>/dev/null || true)
+        printf '%s' "$HDR" | grep -qi '^cross-origin-embedder-policy: require-corp' || PROBLEMS+=("/play/ no devuelve COEP (nginx sin la configuración del cliente web)")
+    fi
+    if [ "${#PROBLEMS[@]}" -eq 0 ]; then
+        ID=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("id",""))' "$ROOT/current/build.json" 2>/dev/null || true)
+        _doctor_check "web-client" ok "puente activo, /play/ con aislamiento de origen cruzado, build ${ID:-?} y datos listos."
+    else
+        _doctor_check "web-client" fail "$(IFS=';'; echo "${PROBLEMS[*]}") — ./install.sh --webclient."
+    fi
+}
+
 # =============================================================================
 # run_doctor EVENTO — ejecuta todas las comprobaciones y persiste el resultado
 # =============================================================================
@@ -452,6 +475,7 @@ run_doctor() {
     _doctor_check_client_data
     _doctor_check_addons
     _doctor_check_resources
+    _doctor_check_web_client
     _doctor_check_translations
     _doctor_check_services
     _doctor_check_disk_space

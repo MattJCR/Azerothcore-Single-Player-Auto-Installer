@@ -64,6 +64,19 @@ PANEL_PANEL_DATABASE="acore_panel"
 PANEL_DB_USER="acore_panel"
 PANEL_SOAP_ACCOUNT="panel_soap"
 
+# Cliente web del navegador (opcional, fase 10: ./install.sh --webclient). Sirve en https://IP/play/ un cliente de
+# WoW 3.3.5a que se ejecuta en el navegador y se conecta a este servidor. NO incluye el cliente: tú aportas tu propio
+# build (WEB_CLIENT_BUILD_DIR) y los ficheros de tu cliente de juego (WEB_CLIENT_DATA_DIR). Necesita el panel (HTTPS).
+# Detalle en INSTALL_ES.md. Sin esas rutas la fase se omite.
+INSTALL_WEB_CLIENT=false
+WEB_CLIENT_BUILD_DIR=""            # carpeta con wow_web.html/.js/.wasm, entrada.js y wgsl/ (en el servidor)
+WEB_CLIENT_DATA_DIR=""             # carpeta Data de tu cliente 3.3.5a (los .MPQ; legible por nginx, mejor fuera de /home)
+WEB_CLIENT_ROOT="/var/lib/azerothcore-play"
+WEB_CLIENT_BRIDGE_PORT=8765        # puente WebSocket -> TCP, solo en 127.0.0.1 (nginx lo publica en /play/ws)
+WEB_CLIENT_AUTH_PORT=3724
+WEB_CLIENT_WORLD_PORT=8085
+WEB_CLIENT_WAKE_WAIT=25            # segundos de espera tras despertar el worldserver en modo en espera
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  MÓDULOS

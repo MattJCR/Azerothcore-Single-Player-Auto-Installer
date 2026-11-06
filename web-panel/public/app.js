@@ -17,6 +17,7 @@ import * as playersView from './views/players.js';
 import * as mapView from './views/map.js';
 import * as socialMapView from './views/socialMap.js';
 import * as addonsView from './views/addons.js';
+import * as clientWebView from './views/clientWeb.js';
 import * as helpView from './views/help.js';
 import * as armoryView from './views/armory.js';
 import * as moderationView from './views/moderation.js';
@@ -31,6 +32,7 @@ Object.assign(viewRegistry, {
   map: mapView,
   'social-map': socialMapView,
   addons: addonsView,
+  'client-web': clientWebView,
   help: helpView,
   armory: armoryView,
   moderation: moderationView,
@@ -59,6 +61,8 @@ $('#login-form').addEventListener('submit', async (event) => {
 
 $('#logout-button').addEventListener('click', async () => { try { await api('/api/logout', { method: 'POST' }); } finally { showLogin(); } });
 $$('.nav-item').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+
+// El enlace «Jugar en el navegador» (cliente web, fase 10 del instalador, opcional) lo decide views/clientWeb.js (refreshPlayNav) al entrar.
 
 // antes sólo alternaba la clase, sin aria-expanded, sin cierre
 // por Escape y sin cierre al pulsar fuera (a diferencia del menú de acciones

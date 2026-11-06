@@ -42,7 +42,7 @@ What the project is: `README_EN.md` · How each of our own pieces works:
 [How it works](#1-how-it-works-from-configsh-to-the-conf) · [Server](#2-server-realm-rates-factions-performance) · [Bots](#3-bots-mod-playerbots-mod-queue-bots-and-mod-world-bots) · [Instances](#4-instances) · [Progression](#5-progression) · [Economy and services](#6-economy-and-services) · [ARAC](#7-races-and-classes-arac) · [Administration and Spanish](#8-administrator-account-service-npcs-and-spanish) · [Versions and notices](#9-versions-offline-copies-and-notices)
 
 **[Part 3 — What each phase does, and why](#part-3--what-each-phase-does-and-why)**
-[The VM](#the-vm-and-the-system-phase-1) · [MySQL](#mysql-phase-2) · [The code](#the-code-and-the-modules-phase-3) · [Compile](#compile-phase-4) · [Configure](#configure-phase-5) · [Services](#the-systemd-services-phase-6) · [Automation](#automation-phase-7) · [Post-install](#post-installation-phase-8) · [Web panel](#web-panel-phase-9) · [Known risks](#known-risks)
+[The VM](#the-vm-and-the-system-phase-1) · [MySQL](#mysql-phase-2) · [The code](#the-code-and-the-modules-phase-3) · [Compile](#compile-phase-4) · [Configure](#configure-phase-5) · [Services](#the-systemd-services-phase-6) · [Automation](#automation-phase-7) · [Post-install](#post-installation-phase-8) · [Web panel](#web-panel-phase-9) · [Web client](#browser-web-client-phase-10-optional) · [Known risks](#known-risks)
 
 **[Part 4 — Operate](#part-4--operate)**
 [Day to day](#1-day-to-day) · [Backups](#2-backup-and-restore) · [Update](#3-updating-the-core-and-the-modules) · [Clean install](#4-clean-install) · [First start](#5-first-start) · [Diagnostics](#6-diagnostics-where-to-look-when-something-fails) · [Tests](#7-test-suite) · [From Windows](#8-operating-from-windows)
@@ -249,6 +249,7 @@ created by the first start. `--post` runs both in that order.
 ./install.sh --fix         # retries what failed
 ./install.sh --post        # phases 8 and 9
 ./install.sh --panel       # installs or updates only the panel (phase 9)
+./install.sh --webclient   # installs or updates the browser web client (phase 10, optional)
 ./install.sh --freeze      # pins in versions.lock the commits that are installed
 ./install.sh --mirror      # offline copies of the repositories in mirrors/
 ./install.sh --verify-mirrors  # only checks that versions.lock and mirrors/ match
@@ -1507,6 +1508,141 @@ that contains `Wow.exe` after the player grants permission. Direct writing requi
 publishing the panel over HTTPS (or opening it from localhost); when accessing by IP
 over HTTP the individual ZIP download is used.
 
+### Browser web client (phase 10, optional)
+
+Serves at `https://REALM_IP/play/` a WoW 3.3.5a client that runs inside a browser
+tab (WebAssembly and WebGPU) and connects to this same server, with the usual
+accounts and characters. **This repository does not include the client or the
+game files**: you bring your own web-client build and the `Data` folder of your
+3.3.5a client; the phase only sets up the infrastructure (bridge, nginx,
+versioning, checks). It is off by default.
+
+`config.sh` options (put your values in `config.local.sh`):
+
+| Option | Default | Purpose |
+|---|---|---|
+| `INSTALL_WEB_CLIENT` | `false` | Enables phase 10. Needs `INSTALL_WEB_PANEL=true` (it is published through the panel's nginx and HTTPS) |
+| `WEB_CLIENT_BUILD_DIR` | empty | Folder on the server with your build: `wow_web.html`, `wow_web.js`, `wow_web.wasm`, `entrada.js`, `wgsl/manifest.txt` and, optionally, `build.json` (`{"id": "…"}`) |
+| `WEB_CLIENT_DATA_DIR` | `WEB_CLIENT_ROOT/base` | Folder of the **base client**: the `Data` folder of a **clean** 3.3.5a client (the `.MPQ` files, with `esES/` and/or `enUS/`; no third-party texture packs: what it contains is what gets served and downloaded) plus the project's own patches. If you already have it, point to it; otherwise leave it as is and **upload it from the panel** (see below). The panel writes to it and nginx reads it: outside `/home`, no spaces, e.g. `/srv/wow-data` |
+| `WEB_CLIENT_ROOT` | `/var/lib/azerothcore-play` | Where deployed versions and the manifest are kept |
+| `WEB_CLIENT_BRIDGE_PORT` | `8765` | Local bridge port (listens on `127.0.0.1` only) |
+| `WEB_CLIENT_AUTH_PORT` / `WEB_CLIENT_WORLD_PORT` | `3724` / `8085` | The only destinations the bridge may open |
+| `WEB_CLIENT_WAKE_WAIT` | `25` | Seconds to wait after waking the worldserver in standby mode |
+
+```bash
+./install.sh --webclient          # install or update (asks for sudo by itself, like --panel)
+sudo bash web-client/deploy.sh --quitar   # uninstall (keeps build and data)
+```
+
+The panel must first have been installed or updated with this version
+(`./install.sh --panel`): its nginx now includes `/etc/azerothcore-panel/play.d/*.conf`.
+
+**Uploading the base client from the panel ("Web client" menu, step 0).** There is no need to copy the
+`.MPQ` files to the server by hand: an administrator (GM 3) opens the panel → **Web client**, chooses the
+`Data` folder (or the `Wow.exe` one) of a 3.3.5a client and presses **Upload to the server**. The browser
+sends each MPQ over HTTPS in 16 MiB chunks, each with its SHA-256; the server verifies every chunk and the
+upload **can be paused and resumed** (also after closing the tab: choose the same folder again and it
+continues where it stopped). When it finishes, the files are checked to be MPQs, the **previous base client
+is replaced** (the realm's own MPQs, `custom.MPQ`, `wateralpha.MPQ`, `addons-web.MPQ` and the
+`patch-<language>-4.MPQ` files, are never uploaded or deleted) and the links and manifest of `/play/datos/`
+are regenerated. If two clients do not fit on the disk, the "Delete the current client before uploading"
+checkbox deletes the old one first. The same step has the **"Web client turned on for all players"**
+switch: when off, `/play/` answers 503 (marker `WEB_CLIENT_ROOT/desactivado`, read by nginx) and the
+"Play in the browser" menu entry, which is the first one under "Your experience", is hidden. While the
+server has no base client, the administrator sees a first-install assistant and everyone else a notice.
+Step 1 (your local folder) and step 2 (turning it on) belong to each user and live only in their browser.
+Requirements: `./install.sh --panel` and `./install.sh --webclient` of this version (they create the
+folders with write access for the panel service and give it access to them); the base client you upload
+must include `common`, `expansion`, `lichking`, `patch` and the `locale-<language>.MPQ` of `esES` or `enUS`.
+
+What the phase does (`web-client/deploy.sh`, idempotent):
+
+1. **Hash-versioned build.** Copies the build to `WEB_CLIENT_ROOT/releases/<id>/`
+   (the `id` from `build.json` or, if absent, a hash of the `.wasm` and `.js`
+   files), adds the entry page (`web-client/play/index.html`) and points
+   `current` at that version atomically. The last three are kept: rolling back is
+   pointing `current` at another folder. nginx always revalidates (`no-cache` +
+   ETag), so a mix of versions is never served, and the entry page warns when the
+   id changed since the browser's last visit.
+2. **Game files.** `web-client/generar-manifiesto.py` leaves in
+   `WEB_CLIENT_ROOT/datos/` one symbolic link per `.MPQ` in the `Data` folder and
+   a `manifiesto.tsv`. nginx serves that folder as `/play/datos/` with `Range`
+   (the client asks for 64 KB blocks), so **only MPQ files can be downloaded**,
+   never the rest of the folder. It runs again with `--webclient` after changing
+   the patches in `Data`.
+3. **WebSocket → TCP bridge** (`azerothcore-web-bridge.service`,
+   `/opt/azerothcore-web-bridge/puente-ws.py`). Browsers cannot open TCP sockets:
+   each WebSocket on `/play/ws?port=N` is forwarded to the authentication or
+   world port of the server itself, and nothing else. The unit runs with
+   `DynamicUser`, no capabilities, `IPAddressDeny=any` + `IPAddressAllow=localhost`
+   (it cannot leave the machine), per-IP connection and idle limits (it uses
+   `X-Real-IP` from the local nginx), and no `sudo`.
+4. **nginx.** Writes `/etc/azerothcore-panel/play.d/play.conf`, which the panel's
+   HTTPS server includes. **Only under `/play/`** it sets
+   `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy:
+   require-corp` and `Cross-Origin-Resource-Policy: same-origin` (WebAssembly
+   threads require them); the panel does not carry them. The `.wasm`, JS and
+   shaders are gzip-compressed; MPQ files are served uncompressed with a
+   one-week cache.
+5. **Check.** Requests `/play/` (headers), `build.json`, `estado` (the bridge),
+   the manifest and a `Range` on the first MPQ (must return 206).
+
+**Standby mode.** With `WORLDSERVER_STANDBY=true` the worldserver sleeps until
+someone connects to port 8085, and while it sleeps the realm shows as unavailable
+for about 20 s after it starts. When the authentication tunnel opens, the bridge
+reads `/run/azerothcore/worldserver.state` (written by the unit: `running`,
+`standby` or `down`); if it is not `running` it wakes the server by briefly
+connecting to 8085 and holds the tunnel until it is (plus
+`WEB_CLIENT_WAKE_WAIT` seconds), so the client sees the realm as available.
+The first login after a quiet period takes those seconds longer.
+
+**From the browser.** Open `https://REALM_IP/play/` (same certificate and
+authority as the panel: install `azerothcore-panel-ca.crt` on the device, as for
+the panel). The page checks secure connection, cross-origin isolation, WebGPU
+with BC textures (recent Chrome or Edge on a computer), game files, bridge and
+version; when everything is green, **Play**. Inside the game, type the server
+account and password. There is currently a single texture profile, **Base** (the
+game's original textures); the page is ready to offer more profiles once the
+server has them, and remembers the chosen one in that browser.
+
+**Where the data comes from.** The page offers two sources. **Server client**: the MPQs are
+downloaded in blocks from `/play/datos/` and the browser keeps them in an on-disk cache (the next
+visit hardly downloads anything). **Local client**: it only shows up if the user has set it up in
+the panel ("Local client" menu → "Web client": pick the `Data` folder, or the `Wow.exe` folder, of
+their 3.3.5a client and tick the activation check); the game then reads the MPQs from that folder
+in place, without downloading them, and the server only supplies whatever is missing. The folder is
+**per user and kept only in their browser**, never on the server, and asks for one permission
+click per session. The realm's own MPQs (`custom.MPQ`, `wateralpha.MPQ`, `addons-web.MPQ`,
+`patch-<language>-4.MPQ`) always come from the server and load last, so nothing local can override
+them. The local client only works in browsers with a folder picker (Chrome, Edge and Brave; in
+Brave you must enable `brave://flags/#file-system-access-api` and restart, and the panel explains
+it).
+
+**Prepare the game.** Optional button on `/play/`: before you play, it downloads in the background
+the data of the most common zones (about 2.4 GB, several minutes) so the first visit to each does
+not wait for the network; when it finishes it says whether everything was downloaded or it ran out
+of room (the browser limits what it lets a site store). Without pressing it the game works the
+same: what is missing is fetched while you play, and the background preload picks zones by where
+the character is.
+
+**Inside the game.** *Video → Graphics enhancements*: render scale and scaling filter,
+sharpening, edge smoothing (FXAA and 4x MSAA), colour and tone, bloom, ambient occlusion and
+transparent water; everything starts off and each page has "Reset to defaults". *Sound → Advanced
+options*: a five-band equalizer (100 Hz, 350 Hz, 1.2 kHz, 4 kHz and 10 kHz, from −12 to +12 dB)
+for each channel (effects and voices, music, ambience and cinematics) and for the whole mix, with
+presets and a soft limiter; when off, the sound is untouched. The server's addons are switched on
+in "AddOns" on the character screen (only the mandatory ones start enabled). The game settings
+are kept in the browser.
+
+`./install.sh --doctor` includes the `web-client` check (bridge active, `/play/`
+with COEP, build and manifest present).
+
+Known limits: the first visit downloads a lot of data (an on-disk cache keeps it; with the local
+client there is no download), Ctrl+V and Ctrl+C work but Cmd+V on macOS does not, DivX video
+cinematics do not play, there is no reverb or voice chat, the IME composes (Chinese, Japanese,
+Korean) but the Spanish client font has no such characters and they show as `?`, and it has only
+been tested in desktop Chrome, Edge and Brave (Firefox, Safari, phones and gamepads are pending).
+
 ### Known risks
 
 | Risk | Mitigation |
@@ -1681,9 +1817,17 @@ new was useful):
    `diff --stat`).
 5. Deploy (§3.3) and check that all is well (`verificar-instalacion.sh`, and in game
    whatever applies according to what changed).
-6. Commit and push the updated `versions.lock` and whatever had to be touched in our
-   `patches/`/`modules/` (and in the work plan, `mod-server-help` and the panel, if point
-   3c or 3d applied).
+6. **Backup copy of the updated module (or core) — always.** Once deployed and verified:
+   `./install.sh --mirror` (builds the `.tar.gz` of the new commit, deletes the old one and
+   updates `MANIFEST.tsv` and `mirrors/versions.lock`), `./install.sh --verify-mirrors`, and
+   bring `mirrors/` to the repo (§8). That way the backup is always the latest installed version
+   and, if the upstream disappears (it happened with `mod-playerbots-wintergrasp`), the
+   installation is not left without it. When a version is published, the new snapshot is also
+   uploaded as an asset (`python docs/publicacion/subir-snapshots.py --subir --podar`): the name
+   carries the commit, so the old asset is of no use.
+7. Commit and push the updated `versions.lock`, `mirrors/` (step 6) and whatever had to be
+   touched in our `patches/`/`modules/` (and in the work plan, `mod-server-help` and the panel,
+   if point 3c or 3d applied).
 
 #### 3.1 Inventory: what has really changed
 
@@ -1765,8 +1909,18 @@ Details that cost a failed attempt if you do not know them:
   `patches/locales-es/` that phase 5 applied earlier (it happened with `mod-transmog` on 2026-10-12).
   `./install.sh --doctor` reports it (`traducciones-es`); fix it with
   `bash scripts/reaplicar-traducciones.sh` (idempotent, touches nothing else).
+- **A module whose SQL needs a newer core** (for example it writes to a table the pinned core does not have yet,
+  as `mod-congrats-on-level` did on 2026-11-06 with `acore_string_locale`) does not just fail by itself: phase 5
+  aborts halfway and leaves `worldserver.conf` as the `.dist`, without the later settings
+  (`Network.UseSocketActivation=1`, `SOAP.Enabled=1`...). The worldserver then loads the world, cannot take over
+  port 8085 from systemd (`StartNetwork failed to bind socket acceptor`) and systemd restarts it in a loop; the
+  synthetic client only sees `TimeoutError`. Do not trust a single `active`: check `systemctl show ac-worldserver -p
+  NRestarts`. Fix: keep that module on its previous commit in `versions.lock`, `./install.sh --only 3`, re-apply
+  by hand the previous SQL of the module if it ran halfway (the updater will not repeat it, the hash is the one
+  already recorded) and repeat `./install.sh --only 5` in full. Check the SQL of every new commit against the
+  pinned core **before** deploying (step 2 of the fixed order).
 
-If all goes well: `./install.sh --mirror` and bring `mirrors/` to the repo (§8).
+If all goes well: `./install.sh --mirror` and bring `mirrors/` to the repo (§8): this is step 6 of the fixed order, mandatory in every update.
 
 **Going back**: recover the previous `versions.lock` from git history and repeat phases 3
 to 5. Database migrations are **not** undone: that is why the backup comes first.

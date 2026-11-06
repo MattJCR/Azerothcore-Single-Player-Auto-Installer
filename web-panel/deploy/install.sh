@@ -47,6 +47,15 @@ LOG_DIR="$AC_DIR/env/dist/bin"
 # para poder leerlos a través del bind mount de sólo lectura, ver más abajo.
 AC_GROUP="$(stat -c '%G' "$ETC_DIR")"
 AC_OWNER="$(stat -c '%U' "$AC_DIR")"
+# Cliente web (/play/): carpeta de estado y carpeta del cliente base (WEB-PANEL). Por defecto, la base vive dentro de la de estado.
+WEB_ROOT="${WEB_CLIENT_ROOT:-/var/lib/azerothcore-play}"
+WEB_DATA="${WEB_CLIENT_DATA_DIR:-$WEB_ROOT/base}"
+if [ "${INSTALL_WEB_CLIENT:-false}" = true ]; then
+    for web_path in "$WEB_ROOT" "$WEB_DATA"; do
+        case "$web_path" in /*) ;; *) echo "WEB_CLIENT_ROOT y WEB_CLIENT_DATA_DIR deben ser rutas absolutas ('$web_path')." >&2; exit 1 ;; esac
+        case "$web_path" in /|/home/*|*[!A-Za-z0-9_./-]*) echo "WEB_CLIENT_ROOT y WEB_CLIENT_DATA_DIR: sin espacios ni símbolos y fuera de /home ('$web_path')." >&2; exit 1 ;; esac
+    done
+fi
 
 for name in "$AUTH_DB" "$CHARACTERS_DB" "$WORLD_DB" "$PANEL_DB" "$DB_USER" "$SOAP_ACCOUNT" "$AC_DB_USER"; do
     if [[ ! "$name" =~ ^[A-Za-z0-9_]+$ ]]; then
@@ -368,6 +377,15 @@ chmod -R u=rwX,go=rX /opt/azerothcore-panel/addons/client
 # jugador (iconos de la armería, parches patch-<idioma>-4.MPQ) y sus entradas fijas.
 install -d -m 0755 /opt/azerothcore-panel/tools
 install -m 0644 "$REPO_DIR/tools/construir-parche-cliente-items.py" "$REPO_DIR/tools/piedra_sede_dbc.py" /opt/azerothcore-panel/tools/
+# Cliente base del cliente web (WEB-PANEL): tras cada subida el panel regenera los enlaces y el manifiesto de /play/datos/ con este script.
+if [ -f "$REPO_DIR/web-client/generar-manifiesto.py" ]; then
+    install -m 0644 "$REPO_DIR/web-client/generar-manifiesto.py" /opt/azerothcore-panel/tools/
+fi
+# Carpetas del cliente web (mismas que usa web-client/deploy.sh): el servicio del panel escribe en ellas por el grupo del usuario de
+# AzerothCore (ReadWritePaths= en la unidad) y nginx las lee como «otros». Sólo se tocan si el cliente web está activado en config.sh.
+if [ "${INSTALL_WEB_CLIENT:-false}" = true ]; then
+    install -d -o "$AC_OWNER" -g "$AC_GROUP" -m 2775 "$WEB_ROOT" "$WEB_ROOT/datos" "$WEB_DATA"
+fi
 if [ -d "$REPO_DIR/.instalacion/insumos/arac" ]; then
     install -d -m 0755 /opt/azerothcore-panel/insumos
     rsync -a --delete "$REPO_DIR/.instalacion/insumos/arac/" /opt/azerothcore-panel/insumos/arac/
@@ -448,6 +466,10 @@ SOAP_TIMEOUT_MS=5000
 # "en espera" en vez de "caído" cuando el worldserver está dormido a propósito.
 WORLDSERVER_STANDBY=${WORLDSERVER_STANDBY:-false}
 WORLDSERVER_STATE_PATH=/run/azerothcore/worldserver.state
+# Cliente web (WEB-PANEL): carpeta del cliente base y de estado de /play/. Sin el cliente web instalado la pantalla «Cliente web» no ofrece subirlo.
+WEB_CLIENT_DATA_DIR=$([ "${INSTALL_WEB_CLIENT:-false}" = true ] && echo "$WEB_DATA")
+WEB_CLIENT_ROOT=$([ "${INSTALL_WEB_CLIENT:-false}" = true ] && echo "$WEB_ROOT")
+WEB_CLIENT_MANIFEST_SCRIPT=/opt/azerothcore-panel/tools/generar-manifiesto.py
 ENV
 chmod 0600 "$ENV_FILE"
 
@@ -462,6 +484,7 @@ fi
 
 echo "[6/8] Configurando systemd…"
 sed -e "s|__ETC_DIR__|$ETC_DIR|g" -e "s|__AC_GROUP__|$AC_GROUP|g" -e "s|__LOG_DIR__|$LOG_DIR|g" \
+    -e "s|__WEB_ROOT__|$WEB_ROOT|g" -e "s|__WEB_DATA__|$WEB_DATA|g" \
     "$DEPLOY_DIR/azerothcore-panel.service" > /etc/systemd/system/azerothcore-panel.service
 chmod 0644 /etc/systemd/system/azerothcore-panel.service
 systemctl daemon-reload
@@ -474,6 +497,7 @@ SERVER_NAME="$(hostname -f 2>/dev/null || hostname)"
 TLS_DIR=/etc/azerothcore-panel/tls
 install -d -m 0711 "$TLS_DIR"
 chmod 0711 "$TLS_DIR"
+install -d -m 0755 /etc/azerothcore-panel/play.d   # el include de nginx.conf (cliente web, fase 10)
 
 if [ -n "${PANEL_TLS_CERTIFICATE:-}" ] || [ -n "${PANEL_TLS_KEY:-}" ]; then
     if [ ! -f "${PANEL_TLS_CERTIFICATE:-}" ] || [ ! -f "${PANEL_TLS_KEY:-}" ]; then

@@ -56,6 +56,13 @@ export const config = Object.freeze({
   pythonCommand: process.env.PYTHON_COMMAND || (process.platform === 'win32' ? 'python' : 'python3'),
   iconsScript: process.env.ICONS_SCRIPT || fileURLToPath(new URL('../tools/extract-item-icons.py', import.meta.url)),
   patchScript: process.env.PATCH_SCRIPT || fileURLToPath(new URL('../../tools/construir-parche-cliente-items.py', import.meta.url)),
+  // Cliente web (/play/): carpeta Data del cliente base y carpeta de estado de web-client/deploy.sh. Vacíos = la pantalla «Cliente web» no
+  // ofrece subir el cliente base. En la VM los fija /etc/azerothcore-panel.env (el servicio escribe ahí por el grupo del usuario de AzerothCore).
+  webClient: {
+    dataDirectory: process.env.WEB_CLIENT_DATA_DIR || '',
+    root: process.env.WEB_CLIENT_ROOT || '',
+    manifestScript: process.env.WEB_CLIENT_MANIFEST_SCRIPT || fileURLToPath(new URL('../../web-client/generar-manifiesto.py', import.meta.url)),
+  },
   // Ninguno de los dos tiene valor por defecto local: sólo existen en la VM
   // (montados de sólo lectura para el proceso del panel, ver BindReadOnlyPaths
   // en azerothcore-panel.service). Sin ellos, la lectura del valor actual de

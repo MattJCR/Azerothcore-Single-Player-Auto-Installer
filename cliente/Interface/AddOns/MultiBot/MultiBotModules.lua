@@ -36,6 +36,16 @@ MultiBot.tips.extensions = {
 
 MultiBot.barLocked = false
 
+-- Borde derecho máximo de la barra para que el engranaje de ajustes (el botón más a la derecha) y su panel, que cuelga justo
+-- encima, quepan en la pantalla. La posición por defecto (-262) es anterior a los botones de Party Here, Dungeon Clear y
+-- ajustes: con ella el engranaje quedaba medio fuera de la pantalla y el panel con el candado, entero fuera.
+MultiBot.ClampBarRight = function(pRight)
+	local tGear = tRight.buttons["BarOptions"]
+	local tGearRight, tBarRight = tGear and tGear:GetRight(), tMultiBar:GetRight()
+	if(pRight == nil or tGearRight == nil or tBarRight == nil) then return pRight end
+	return math.min(pRight, GetScreenWidth() - 4 - (tGearRight - tBarRight) * tMultiBar:GetScale())
+end
+
 MultiBot.SaveBarPosition = function()
 	local x, y = MultiBot.toPoint(tMultiBar)
 	MultiBotSave["MultiBarPoint"] = x .. ", " .. y
@@ -202,7 +212,7 @@ AddScaleButton("Larger", 68, "+", MultiBot.tips.extensions.larger, function()
 	SetScale(tMultiBar:GetScale() + 0.1)
 end):Hide()
 
-local lockButton = barOptions.addButton("Lock", 0, 0, "inv_misc_lockbox_1", MultiBot.tips.extensions.lock)
+local lockButton = barOptions.addButton("Lock", 0, 0, "inv_misc_key_14", MultiBot.tips.extensions.lock)
 
 local function SetLocked(locked)
 	MultiBot.barLocked = locked and true or false

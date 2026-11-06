@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Vista "Addons del cliente": catálogo, instalación directa vía File System
 // Access API, detección de lo ya instalado y parches de cliente.
-import { $, $$, state, api, showLogin, showToast, escapeHtml } from '../shared.js';
+import { $, $$, state, api, showLogin, showToast, escapeHtml, directoryPickerUnavailable } from '../shared.js';
 import { ClientData, describeClient, prepareResources } from '../client-resources.js';
 import { t, lang, lowerCase, compareText, formatDate, formatDateTime, formatNumber } from '../i18n.js';
 
@@ -334,7 +334,7 @@ async function chooseWowDirectory({ skipPrepare = false } = {}) {
     return;
   }
   if (!window.showDirectoryPicker) {
-    showToast(t('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.'));
+    directoryPickerUnavailable();
     return;
   }
   try {
@@ -532,7 +532,7 @@ async function installPatches() {
     return;
   }
   if (!window.showDirectoryPicker) {
-    showToast(t('El origen ya es seguro, pero este navegador no admite el selector. Usa una versión actual de Chrome o Edge.'));
+    directoryPickerUnavailable();
     return;
   }
   if (!state.patches.length) {

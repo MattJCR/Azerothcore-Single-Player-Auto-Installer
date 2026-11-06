@@ -19,6 +19,11 @@ WorkingDirectory=/opt/azerothcore-panel
 # del instalador no podría leer su estado. install.sh crea la carpeta con el grupo del
 # usuario de AzerothCore (SupplementaryGroups= de arriba), setgid y legible por todos.
 ReadWritePaths=/var/lib/azerothcore-panel
+# Cliente web (WEB-PANEL): el administrador sube desde el panel el cliente base a WEB_CLIENT_DATA_DIR y el panel regenera los
+# enlaces/manifiesto y la marca de «desactivado» en WEB_CLIENT_ROOT. El «-» ignora la ruta si el cliente web no está instalado.
+# Ambas carpetas las crea install.sh/deploy.sh con el grupo del usuario de AzerothCore (SupplementaryGroups= de arriba), 2775,
+# y deben estar fuera de /home (ProtectHome=yes).
+ReadWritePaths=-__WEB_ROOT__ -__WEB_DATA__
 EnvironmentFile=/etc/azerothcore-panel.env
 ExecStart=/usr/bin/node /opt/azerothcore-panel/src/server.js
 Restart=on-failure

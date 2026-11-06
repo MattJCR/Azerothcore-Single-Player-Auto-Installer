@@ -35,7 +35,7 @@ Qué es el proyecto: `README.md` · Cómo funciona cada pieza propia:
 [Cómo funciona](#1-cómo-funciona-de-configsh-al-conf) · [Servidor](#2-servidor-reino-tasas-facciones-rendimiento) · [Bots](#3-bots-mod-playerbots-mod-queue-bots-y-mod-world-bots) · [Instancias](#4-instancias) · [Progresión](#5-progresión) · [Economía y servicios](#6-economía-y-servicios) · [ARAC](#7-razas-y-clases-arac) · [Administración y español](#8-cuenta-de-administrador-npc-de-servicio-y-español) · [Versiones y avisos](#9-versiones-copias-offline-y-avisos)
 
 **[Parte 3 — Qué hace cada fase, y por qué](#parte-3--qué-hace-cada-fase-y-por-qué)**
-[La VM](#la-vm-y-el-sistema-fase-1) · [MySQL](#mysql-fase-2) · [El código](#el-código-y-los-módulos-fase-3) · [Compilar](#compilar-fase-4) · [Configurar](#configurar-fase-5) · [Servicios](#los-servicios-systemd-fase-6) · [Automatización](#automatización-fase-7) · [Post-instalación](#post-instalación-fase-8) · [Panel web](#panel-web-fase-9) · [Riesgos conocidos](#riesgos-conocidos)
+[La VM](#la-vm-y-el-sistema-fase-1) · [MySQL](#mysql-fase-2) · [El código](#el-código-y-los-módulos-fase-3) · [Compilar](#compilar-fase-4) · [Configurar](#configurar-fase-5) · [Servicios](#los-servicios-systemd-fase-6) · [Automatización](#automatización-fase-7) · [Post-instalación](#post-instalación-fase-8) · [Panel web](#panel-web-fase-9) · [Cliente web](#cliente-web-del-navegador-fase-10-opcional) · [Riesgos conocidos](#riesgos-conocidos)
 
 **[Parte 4 — Operar](#parte-4--operar)**
 [Día a día](#1-día-a-día) · [Copias](#2-copia-de-seguridad-y-restauración) · [Actualizar](#3-actualizar-el-core-y-los-módulos) · [Instalación limpia](#4-instalación-limpia) · [Primer arranque](#5-primer-arranque) · [Diagnóstico](#6-diagnóstico-dónde-mirar-cuando-algo-falla) · [Pruebas](#7-batería-de-pruebas) · [Desde Windows](#8-operar-desde-windows)
@@ -241,6 +241,7 @@ creadas por el primer arranque. `--post` ejecuta ambas en ese orden.
 ./install.sh --fix         # reintenta lo que falló
 ./install.sh --post        # fases 8 y 9
 ./install.sh --panel       # instala o actualiza sólo el panel (fase 9)
+./install.sh --webclient   # instala o actualiza el cliente web del navegador (fase 10, opcional)
 ./install.sh --freeze      # fija en versions.lock los commits que hay instalados
 ./install.sh --mirror      # copias offline de los repositorios en mirrors/
 ./install.sh --verify-mirrors  # solo comprueba que versions.lock y mirrors/ coinciden
@@ -1484,6 +1485,140 @@ carpeta que contiene `Wow.exe` después de que el jugador conceda permiso. La
 escritura directa requiere publicar el panel por HTTPS (o abrirlo desde
 localhost); al acceder por la IP con HTTP se usa la descarga ZIP individual.
 
+### Cliente web del navegador (fase 10, opcional)
+
+Sirve en `https://REALM_IP/play/` un cliente de WoW 3.3.5a que se ejecuta dentro
+de una pestaña (WebAssembly y WebGPU) y se conecta a este mismo servidor, con
+las cuentas y los personajes de siempre. **Este repositorio no incluye el
+cliente ni los ficheros del juego**: tú aportas tu propio build del cliente web
+y la carpeta `Data` de tu cliente 3.3.5a; la fase sólo monta la infraestructura
+(puente, nginx, versionado, comprobaciones). Está desactivada de fábrica.
+
+Opciones de `config.sh` (pon tus valores en `config.local.sh`):
+
+| Opción | Valor por defecto | Para qué |
+|---|---|---|
+| `INSTALL_WEB_CLIENT` | `false` | Activa la fase 10. Necesita `INSTALL_WEB_PANEL=true` (se publica con el nginx y el HTTPS del panel) |
+| `WEB_CLIENT_BUILD_DIR` | vacío | Carpeta del servidor con tu build: `wow_web.html`, `wow_web.js`, `wow_web.wasm`, `entrada.js`, `wgsl/manifest.txt` y, opcional, `build.json` (`{"id": "…"}`) |
+| `WEB_CLIENT_DATA_DIR` | `WEB_CLIENT_ROOT/base` | Carpeta del **cliente base**: la `Data` de un cliente 3.3.5a **limpio** (los `.MPQ`, con `esES/` y/o `enUS/`; sin paquetes de texturas de terceros: lo que contiene es lo que se sirve y se descarga) más los parches propios del proyecto. Si ya la tienes, indícala; si no, déjala como está y **súbela desde el panel** (ver más abajo). El panel escribe en ella y nginx la lee: fuera de `/home`, sin espacios, p. ej. `/srv/wow-data` |
+| `WEB_CLIENT_ROOT` | `/var/lib/azerothcore-play` | Dónde se guardan las versiones desplegadas y el manifiesto |
+| `WEB_CLIENT_BRIDGE_PORT` | `8765` | Puerto local del puente (sólo escucha en `127.0.0.1`) |
+| `WEB_CLIENT_AUTH_PORT` / `WEB_CLIENT_WORLD_PORT` | `3724` / `8085` | Los únicos destinos que el puente puede abrir |
+| `WEB_CLIENT_WAKE_WAIT` | `25` | Segundos de espera tras despertar el worldserver en modo en espera |
+
+```bash
+./install.sh --webclient          # instala o actualiza (pide sudo él solo, como --panel)
+sudo bash web-client/deploy.sh --quitar   # lo desinstala (conserva build y datos)
+```
+
+Antes hay que haber instalado o actualizado el panel con esta versión
+(`./install.sh --panel`): su nginx ahora incluye `/etc/azerothcore-panel/play.d/*.conf`.
+
+**Subir el cliente base desde el panel (menú «Cliente web», paso 0).** No hace falta copiar
+a mano los `.MPQ` al servidor: un administrador (GM 3) abre el panel → **Cliente web**, elige la carpeta
+`Data` (o la de `Wow.exe`) de un cliente 3.3.5a y pulsa **Subir al servidor**. El navegador envía cada
+MPQ por HTTPS en trozos de 16 MiB, cada uno con su SHA-256; el servidor comprueba cada trozo y
+la subida **se puede pausar y reanudar** (también tras cerrar la pestaña: se vuelve a elegir la misma
+carpeta y continúa donde se quedó). Al terminar se comprueba que son MPQ, se **sustituye el cliente base
+anterior** (los MPQ propios del reino, `custom.MPQ`, `wateralpha.MPQ`, `addons-web.MPQ` y los
+`patch-<idioma>-4.MPQ`, nunca se suben ni se borran) y se regeneran los enlaces y el manifiesto de
+`/play/datos/`. Si no caben dos clientes en el disco, la casilla «Borrar el cliente actual antes de subir»
+lo borra primero. El mismo paso tiene el interruptor **«Cliente web activo para todos los jugadores»**:
+apagado, `/play/` responde 503 (marca `WEB_CLIENT_ROOT/desactivado`, que lee nginx) y el menú
+«Jugar en el navegador», que sale el primero de «Tu experiencia», se oculta. Mientras el servidor no
+tiene cliente base, el administrador ve un asistente de primera instalación y el resto de
+cuentas, un aviso. El paso 1 (tu carpeta local) y el 2 (activarla) son de cada usuario y sólo viven en su
+navegador. Requisitos: `./install.sh --panel` y `./install.sh --webclient` de esta versión (crean las
+carpetas con escritura para el servicio del panel y le dan acceso a ellas); el cliente base que subas
+debe incluir `common`, `expansion`, `lichking`, `patch` y el `locale-<idioma>.MPQ` de `esES` o `enUS`.
+
+Qué hace la fase (`web-client/deploy.sh`, idempotente):
+
+1. **Versión por hash.** Copia el build a `WEB_CLIENT_ROOT/releases/<id>/` (el
+   `id` de `build.json` o, si falta, el hash del `.wasm` y los `.js`), añade la
+   página de entrada (`web-client/play/index.html`) y apunta `current` a esa
+   versión con un cambio atómico. Se conservan las tres últimas: volver atrás es
+   apuntar `current` a otra carpeta. nginx revalida siempre (`no-cache` + ETag),
+   así que nunca se sirve una mezcla de versiones, y la página de entrada avisa
+   si el id cambió desde la última visita del navegador.
+2. **Ficheros del juego.** `web-client/generar-manifiesto.py` deja en
+   `WEB_CLIENT_ROOT/datos/` un enlace simbólico por cada `.MPQ` de la carpeta
+   `Data` y un `manifiesto.tsv`. nginx sirve esa carpeta como `/play/datos/` con
+   `Range` (el cliente pide bloques de 64 KB), de modo que **sólo se pueden
+   descargar MPQ**, nunca el resto de la carpeta. Se vuelve a ejecutar con
+   `--webclient` tras cambiar los parches de `Data`.
+3. **Puente WebSocket → TCP** (`azerothcore-web-bridge.service`,
+   `/opt/azerothcore-web-bridge/puente-ws.py`). El navegador no abre sockets TCP:
+   cada WebSocket de `/play/ws?port=N` se reenvía al puerto de autenticación o
+   al del mundo del propio servidor, y a nada más. La unidad corre con
+   `DynamicUser`, sin capacidades, con `IPAddressDeny=any` +
+   `IPAddressAllow=localhost` (no puede salir de la máquina), límites de
+   conexiones por IP (usa `X-Real-IP` del nginx local) e inactividad, y sin
+   `sudo`.
+4. **nginx.** Escribe `/etc/azerothcore-panel/play.d/play.conf`, que el servidor
+   HTTPS del panel incluye. **Sólo en `/play/`** pone las cabeceras
+   `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy:
+   require-corp` y `Cross-Origin-Resource-Policy: same-origin` (los hilos de
+   WebAssembly las exigen); el panel no las lleva. Comprime el `.wasm`, el JS y
+   los shaders con gzip; los MPQ van sin comprimir y con caché de una semana.
+5. **Comprobación.** Pide `/play/` (cabeceras), `build.json`, `estado` (el
+   puente), el manifiesto y un `Range` sobre el primer MPQ (debe devolver 206).
+
+**Modo en espera.** Con `WORLDSERVER_STANDBY=true` el worldserver duerme hasta
+que alguien conecta con el puerto 8085, y mientras duerme el reino consta como no
+disponible unos 20 s después de arrancar. Al abrir el túnel de autenticación el
+puente lee `/run/azerothcore/worldserver.state` (lo escribe la unidad:
+`running`, `standby` o `down`); si no pone `running` la despierta conectando un
+instante con el 8085 y retiene el túnel hasta que lo ponga (más
+`WEB_CLIENT_WAKE_WAIT` segundos), para que el cliente vea el reino disponible.
+El primer inicio de sesión tras un rato de espera tarda esos segundos más.
+
+**Desde el navegador.** Abre `https://REALM_IP/play/` (es el mismo certificado y
+la misma autoridad que el panel: instala `azerothcore-panel-ca.crt` en el
+dispositivo, igual que para el panel). La página comprueba conexión segura,
+aislamiento de origen cruzado, WebGPU con texturas BC (Chrome o Edge recientes
+en un ordenador), ficheros del juego, puente y versión; si todo está en verde,
+**Jugar**. Dentro se escribe la cuenta y la contraseña del servidor. Hoy hay un
+solo perfil de texturas, **Base** (las originales del juego); la página está
+preparada para ofrecer más perfiles el día que el servidor los tenga, y recuerda
+el elegido en ese navegador.
+
+**De dónde salen los datos.** La página ofrece dos orígenes. **Cliente del servidor**: los MPQ se
+descargan por bloques de `/play/datos/` y el navegador los guarda en una caché en disco (la visita
+siguiente apenas descarga nada). **Cliente local**: sólo aparece si el usuario lo ha configurado en
+el panel (menú «Cliente local» → «Cliente web»: elegir la carpeta `Data`, o la de `Wow.exe`, de su
+cliente 3.3.5a y marcar el check de activación); el juego lee entonces los MPQ de esa carpeta en el
+sitio, sin descargarlos, y sólo lo que falte lo pone el servidor. La carpeta es **por usuario y se
+guarda sólo en su navegador**, nunca en el servidor, y pide un clic de permiso por sesión. Los MPQ
+propios del reino (`custom.MPQ`, `wateralpha.MPQ`, `addons-web.MPQ`, `patch-<idioma>-4.MPQ`) vienen
+siempre del servidor y se cargan los últimos, para que nada local los pise. El cliente local sólo
+funciona en navegadores con selector de carpetas (Chrome, Edge y Brave; en Brave hay que activar
+`brave://flags/#file-system-access-api` y reiniciar, y el panel lo explica).
+
+**Preparar el juego.** Botón opcional de `/play/`: baja en segundo plano, antes de jugar, los datos de
+las zonas más habituales (unos 2,4 GB, varios minutos) para que la primera visita a cada una no
+espere a la red; al terminar avisa de si bajó todo o se quedó sin sitio (el navegador limita lo que
+deja guardar). Sin pulsarlo el juego funciona igual: lo que falta se baja mientras se juega, y la
+precarga en segundo plano elige las zonas por donde está el personaje.
+
+**Dentro del juego.** *Vídeo → Mejoras gráficas*: escala de render y filtro de ampliación, nitidez,
+suavizado de bordes (FXAA y MSAA 4x), color y tono, resplandor, oclusión ambiental y agua
+transparente; todo arranca apagado y cada página tiene «Valores por defecto». *Sonido → Opciones
+avanzadas*: ecualizador de cinco bandas (100 Hz, 350 Hz, 1,2 kHz, 4 kHz y 10 kHz, de −12 a +12 dB)
+para cada canal (efectos y voces, música, ambiente y cinemáticas) y para el conjunto, con
+preajustes y un limitador suave; apagado, el sonido no se toca. Los addons del servidor se activan
+en «Accesorios» de la selección de personaje (sólo los obligatorios vienen activos). La
+configuración del juego se conserva en el navegador.
+
+`./install.sh --doctor` incluye la comprobación `web-client` (puente activo,
+`/play/` con COEP, build y manifiesto presentes).
+
+Límites conocidos: la primera visita descarga muchos datos (una caché en disco los conserva; con el
+cliente local no hay descarga), Ctrl+V y Ctrl+C funcionan pero Cmd+V en macOS no, no se reproducen
+las cinemáticas de vídeo DivX, no hay reverberación ni chat de voz, el IME compone (chino, japonés,
+coreano) pero la fuente del cliente en español no tiene sus caracteres y salen como `?`, y sólo está
+probado en Chrome, Edge y Brave de escritorio (Firefox y Safari y los móviles o el mando, pendientes).
+
 ### Riesgos conocidos
 
 | Riesgo | Mitigación |
@@ -1666,7 +1801,15 @@ nuevo servía):
    `diff --stat`).
 5. Desplegar (§3.3) y comprobar que todo va bien (`verificar-instalacion.sh`,
    y en juego lo que toque según lo que haya cambiado).
-6. Commit y push del `versions.lock` actualizado y de lo que haya hecho
+6. **Copia de respaldo del módulo (o core) actualizado — siempre.** Una vez
+   desplegado y verificado: `./install.sh --mirror` (genera el `.tar.gz` del commit nuevo,
+   borra el viejo y actualiza `MANIFEST.tsv` y `mirrors/versions.lock`), `./install.sh --verify-mirrors`
+   y traer `mirrors/` al repo (§8). Así el respaldo es siempre la última versión instalada y, si el
+   upstream desaparece (pasó con `mod-playerbots-wintergrasp`), la instalación no se queda sin ella.
+   Al publicar una versión, el snapshot nuevo también se sube como asset
+   (`python docs/publicacion/subir-snapshots.py --subir --podar`): el nombre lleva el commit, así
+   que el asset viejo no sirve.
+7. Commit y push del `versions.lock` actualizado, de `mirrors/` (paso 6) y de lo que haya hecho
    falta tocar en `patches/`/`modules/` propios (y en el plan de trabajo, `mod-server-help` y el panel, si el punto 3c o 3d aplicó).
 
 #### 3.1 Inventario: qué ha cambiado de verdad
@@ -1752,8 +1895,18 @@ Detalles que cuestan un intento fallido si no se saben:
   filas de `patches/locales-es/` que la fase 5 aplicó antes (pasó con `mod-transmog` el 12/10/2026).
   `./install.sh --doctor` lo avisa (`traducciones-es`); se arregla con
   `bash scripts/reaplicar-traducciones.sh` (idempotente, no toca nada más).
+- **Un módulo cuyo SQL necesita un core más nuevo** (por ejemplo, escribe en una tabla que el core fijado aún no
+  tiene, como hizo `mod-congrats-on-level` el 06/11/2026 con `acore_string_locale`) no falla sólo él: la fase 5
+  se aborta a mitad y deja `worldserver.conf` como el `.dist`, sin los ajustes posteriores
+  (`Network.UseSocketActivation=1`, `SOAP.Enabled=1`...). El worldserver carga el mundo, no puede tomar el
+  puerto 8085 de systemd (`StartNetwork failed to bind socket acceptor`) y systemd lo relanza en bucle; el
+  cliente sintético sólo ve `TimeoutError`. No te fíes de un único `active`: mira `systemctl show ac-worldserver -p
+  NRestarts`. Arreglo: dejar ese módulo en su commit anterior en `versions.lock`, `./install.sh --only 3`,
+  reaplicar a mano el SQL anterior del módulo si corrió a medias (el actualizador no lo repite, el hash es el ya
+  registrado) y repetir `./install.sh --only 5` entero. Conviene comprobar el SQL de cada commit nuevo contra el
+  core fijado **antes** de desplegar (punto 2 del orden fijo).
 
-Si todo va bien: `./install.sh --mirror` y traer `mirrors/` al repo (§8).
+Si todo va bien: `./install.sh --mirror` y traer `mirrors/` al repo (§8): es el paso 6 del orden fijo, obligatorio en cada actualización.
 
 **Volver atrás**: recuperar el `versions.lock` anterior del historial de git y
 repetir fases 3 a 5. Las migraciones de base de datos **no** se deshacen: por
