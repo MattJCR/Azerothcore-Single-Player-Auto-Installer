@@ -125,7 +125,7 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: web-panel/package-lock.json
-      - run: sudo apt-get install -y --no-install-recommends libarchive-tools
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libarchive-tools
       - working-directory: web-panel
         run: npm ci --no-audit --no-fund
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -153,7 +153,7 @@ jobs:
           cache-dependency-path: web-panel/package-lock.json
       - working-directory: web-panel
         run: npm ci --no-audit --no-fund
-      - run: sudo apt-get install -y --no-install-recommends libarchive-tools
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libarchive-tools
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .instalacion/cache/addons
@@ -168,5 +168,6 @@ jobs:
         run: npm test
       - name: Generadores de recursos (insumos sueltos)
         run: |
+          sudo apt-get update
           sudo apt-get install -y --no-install-recommends python3-pil
           python3 -m unittest discover -s tests -p 'test_generar_recursos.py'
