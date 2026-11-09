@@ -352,8 +352,7 @@ export const CATEGORIES = [
       { key: 'Playerbots.MaxRandomBots', default: '500', type: 'int', min: 0, max: null, risk: 'high', description: 'Cifra alta = carga de CPU/memoria alta; el servidor actual usa un valor propio distinto del .dist, verificar antes de tocar. Con WorldBots.PlayerScale.Enable=1 (mod_world_bots.conf) mod-world-bots lo pisa en caliente cada pocos segundos según jugadores conectados: editar aquí no sirve de nada mientras esté activo.' },
       { key: 'Playerbots.RandomBotMinLevel', default: '1', type: 'int', min: 1, max: null, risk: 'medium', description: 'Nivel mínimo de los bots aleatorios.' },
       { key: 'Playerbots.RandomBotMaxLevel', default: '80', type: 'int', min: 1, max: null, risk: 'medium', description: 'Nivel máximo de los bots aleatorios.' },
-      { key: 'Playerbots.MinRandomBotInWorldTime', default: '600', type: 'int', min: 0, max: null, risk: 'low', description: 'Segundos mínimos que un bot aleatorio permanece en el mundo.' },
-      { key: 'Playerbots.MaxRandomBotInWorldTime', default: '28800', type: 'int', min: 0, max: null, risk: 'low', description: 'Segundos máximos que un bot aleatorio permanece en el mundo.' },
+      { key: 'Playerbots.RandomBotCountMode', default: '0', type: 'int', min: 0, max: 2, risk: 'medium', description: 'Cómo cambia el número de bots conectados: 0 fijo (tirado al arrancar entre Min y MaxRandomBots), 1 variable (se vuelve a tirar cada cierto tiempo), 2 por horario (sube de Min a Max entre RandomBotCountMinTime y RandomBotCountMaxTime). Con WorldBots.PlayerScale.Enable=1 mod-world-bots fija Min = Max y el modo no cambia nada.' },
     ],
   },
   {

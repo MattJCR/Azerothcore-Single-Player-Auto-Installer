@@ -583,8 +583,8 @@ that the installer writes exist.
 |---|---|---|---|
 | `BOTS_MIN` / `BOTS_MAX` | `Playerbots.MinRandomBots` / `MaxRandomBots` | **500 / 600** (since 2026-09-03; before 400/500 and 200/250) | The module picks a target between the two and changes it every 30-120 min. **It is how many bots actually come to exist**: it wakes up to that cap and each bot gets its level roll the first time; the rest stay in the reserve at level 1. It was raised so that mod-world-bots has somewhere to take bots of your bracket from without emptying the rest of the world. The dist brings 500/500. **Memory still to be watched**: with 153 bots the worldserver took 3.7 GB |
 | `BOT_ACTIVE_ALONE` | `BotActiveAlone` | 10 | Percentage of bots that really simulate far from any player. Those in your zone are always woken up (`BotActiveAloneForceWhenInZone = 1`, from the dist). It is what contains the cost of 400-500 bots |
-| `BOTS_PERIODIC_ONLINE_OFFLINE` / `BOTS_PERIODIC_RATIO` | `EnablePeriodicOnlineOffline` / `PeriodicOnlineOfflineRatio` | **true** / 2.0 (since 2026-09-02) | Bots come and go in turns, like real people: from a set of 2 × `BOTS_MAX` (1000 of the 1500) there are `BOTS_MAX` connected and they keep rotating. Over time more bots are debuted and the population changes from one day to the next |
-| `BOTS_ACCOUNT_COUNT` | `Playerbots.RandomBotAccountCount` | 150 | 10 characters per account → 1500 bots in the reserve |
+| `BOTS_COUNT_MODE` | `Playerbots.RandomBotCountMode` | 0 (since 2026-11-09) | How the number of connected bots changes: 0 fixed between `BOTS_MIN` and `BOTS_MAX` (rolled at start-up), 1 variable (re-rolled every so often), 2 scheduled (rises from `BOTS_MIN` at 5:00 to `BOTS_MAX` at 20:00). It replaces the turn-based rotation (`EnablePeriodicOnlineOffline`), which mod-playerbots removed on 2026-11-06 (#2774). With `BOTS_PER_PLAYER_SCALE` mod-world-bots sets min = max, so the mode changes nothing; lowering the target now logs bots out (the free ones) instead of waiting for the rotation |
+| `BOTS_ACCOUNT_COUNT` | `Playerbots.RandomBotAccountCount` | 0 (calculated) | 10 characters per account. With 0 playerbots calculates it from `BOTS_MAX` (without the rotation it no longer doubles: ~65 accounts with 600) and creates the missing ones; existing ones are kept and can be woken up, but the reserve no longer has to be twice the population |
 | `BOTS_LEVEL_MIN` / `MAX` | `RandomBotMinLevel` / `MaxLevel` | 1 / 80 | |
 | `BOTS_DISABLED_WITHOUT_PLAYER` | `DisabledWithoutRealPlayer` | **true** | Random bots only appear with a real player. When the last one leaves, they disconnect after 10 minutes (`BOTS_NO_PLAYER_LOGOUT_DELAY=600`). |
 | `BOTS_MAX_PER_PLAYER` | `MaxAddedBots` | 40 | Cap of own bots in your raid. With 4 a raid could not be formed, and with individual-progression progression **is** the raid |
@@ -605,7 +605,6 @@ that the installer writes exist.
 | `BOTS_LEVEL_BRACKETS_SYNC_FACTIONS` | `LevelBrackets.Dynamic.SyncFactions` | **true** | Alliance and Horde follow the same bracket |
 | `BOTS_LEVEL_BRACKETS_PLAYER_WEIGHT` | `LevelBrackets.Dynamic.RealPlayerWeight` | 1000.0 | Fallback in case the patch is missing; with `HighestPlayerOnly` active it does not decide the spread |
 | `BOTS_LEVEL80_PCT` | percentages `LevelBrackets.<faction>.Range*.Pct` | 0 | It imposes no fixed quota of level 80. `mod-adaptive-ai` is archived |
-| `BOTS_WORLD_TIME_MIN` / `_MAX` | `Playerbots.MinRandomBotInWorldTime` / `Max...` | 7200 / 28800 | Seconds a bot stays in the world before it can be rotated |
 
 > ⚠️ To move a bot to another bracket, LevelBrackets **re-rolls it entirely** with
 > `PlayerbotFactory::Randomize()`: level, gear, talents and quests. It is the
@@ -1919,6 +1918,14 @@ Details that cost a failed attempt if you do not know them:
   by hand the previous SQL of the module if it ran halfway (the updater will not repeat it, the hash is the one
   already recorded) and repeat `./install.sh --only 5` in full. Check the SQL of every new commit against the
   pinned core **before** deploying (step 2 of the fixed order).
+- **If what the module needs is precisely the core being updated at the same time** (the 2026-11-09 case: core,
+  mod-playerbots and congrats together), phase 5 still fails the first time, because the core creates
+  `acore_string_locale` when it migrates its database on its first start. Order that worked: `--only 3`, `--only 4`,
+  `--only 5` (fails on the congrats SQL), **start the worldserver once** (`sudo systemctl start ac-worldserver`; with
+  the half-written conf it only migrates and drops, as expected), stop it (`sudo systemctl stop ac-worldserver`, with
+  the socket stopped) and repeat `--only 5` in full. Those failed starts leave the realm with `flag=3` in
+  `acore_auth.realmlist` and the authserver refuses to start ("No valid realms specified"): put it back to the value
+  it had with the worldserver stopped (`UPDATE realmlist SET flag=2 WHERE id=1`, it is in the previous backup) and restart the authserver.
 
 If all goes well: `./install.sh --mirror` and bring `mirrors/` to the repo (§8): this is step 6 of the fixed order, mandatory in every update.
 

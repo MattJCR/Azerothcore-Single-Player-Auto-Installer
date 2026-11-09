@@ -397,21 +397,14 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
         set_conf_value "$CONF" "Playerbots.MaxRandomBots"               "$BOTS_MAX"
         set_conf_value "$CONF" "Playerbots.RandomBotMinLevel"           "$BOTS_LEVEL_MIN"
         set_conf_value "$CONF" "Playerbots.RandomBotMaxLevel"           "$BOTS_LEVEL_MAX"
-        # Cuánto se queda un bot en el mundo antes de que se le pueda rotar:
-        # el .conf.dist del módulo trae 10 minutos, el propio código de
-        # playerbots usa 2 horas por defecto. Con 10 minutos hay trasiego
-        # constante de entradas y salidas, y cada re-entrada de un bot de
-        # entrenamiento cuesta un Randomize completo (03/09/2026).
-        set_conf_value "$CONF" "Playerbots.MinRandomBotInWorldTime"     "${BOTS_WORLD_TIME_MIN:-7200}"
-        set_conf_value "$CONF" "Playerbots.MaxRandomBotInWorldTime"     "${BOTS_WORLD_TIME_MAX:-28800}"
         set_conf_value "$CONF" "Playerbots.DisabledWithoutRealPlayer"   "$(bool_to_int "$BOTS_DISABLED_WITHOUT_PLAYER")"
         set_conf_value "$CONF" "Playerbots.DisabledWithoutRealPlayerLogoutDelay" "${BOTS_NO_PLAYER_LOGOUT_DELAY:-600}"
         # Porcentaje de bots que simula de verdad lejos de cualquier jugador. Es
         # lo que contiene el coste de subir MinRandomBots/MaxRandomBots a 400/500.
         set_conf_value "$CONF" "Playerbots.BotActiveAlone"              "${BOT_ACTIVE_ALONE:-10}"
-        # Rotación de bots conectados/desconectados, como gente real.
-        set_conf_value "$CONF" "Playerbots.EnablePeriodicOnlineOffline"  "$(bool_to_int "${BOTS_PERIODIC_ONLINE_OFFLINE:-false}")"
-        set_conf_value "$CONF" "Playerbots.PeriodicOnlineOfflineRatio"   "${BOTS_PERIODIC_RATIO:-2.0}"
+        # Cómo cambia la población de bots conectados (0 estático, 1 variable,
+        # 2 por horario). Sustituye a la rotación periódica, eliminada en #2774.
+        set_conf_value "$CONF" "Playerbots.RandomBotCountMode"           "${BOTS_COUNT_MODE:-0}"
         set_conf_value "$CONF" "Playerbots.MaxAddedBots"                "$BOTS_MAX_PER_PLAYER"
         set_conf_value "$CONF" "Playerbots.RandomBotAutoJoinBG"         "$(bool_to_int "$BOTS_AUTO_JOIN_BG")"
         # OJO: RandomBotMaxGearQuality NO existe en el módulo (se comprobó con un
@@ -450,8 +443,8 @@ if [ "$INSTALL_MOD_PLAYERBOTS" = true ]; then
         # Recolección (DoGather, 12/10/2026): los bots recorren la zona cogiendo
         # hierbas y minerales. Opción nueva de playerbots, encendida de fábrica y sin
         # medir aquí (coste por bot, competencia por los nodos): arranca apagada
-        # hasta probarla (PLAN.md, UPD-O).
-        set_conf_value "$CONF" "Playerbots.RpgStatusProbWeight.DoGather" "0"
+        # hasta probarla (PLAN.md, UPD-O). Peso 0-100 (15 de fábrica) en BOTS_RPG_DO_GATHER.
+        set_conf_value "$CONF" "Playerbots.RpgStatusProbWeight.DoGather" "${BOTS_RPG_DO_GATHER:-0}"
 
         # El módulo amontona por defecto un 10% de bots en el nivel mínimo y
         # otro 10% en el máximo, dejando pelados los niveles intermedios.

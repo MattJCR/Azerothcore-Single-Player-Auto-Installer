@@ -1078,10 +1078,9 @@ namespace
     // ApplyStage pisa randomBotMaxLevel). Con min == max, el objetivo aleatorio
     // interno del modulo (bot_count) sale exacto y se recalcula solo, en el
     // siguiente tick, en cuanto quede fuera del rango nuevo (RandomPlayerbotMgr.cpp,
-    // UpdateAIInternal). Bajar el objetivo no expulsa a nadie: solo deja de
-    // admitir mas altas: la poblacion existente drena sola via la rotacion
-    // periodica (EnablePeriodicOnlineOffline) o se queda como esta si la
-    // rotacion esta apagada.
+    // UpdateAIInternal). Bajar el objetivo no expulsa a nadie
+    // de golpe: playerbots retira los sobrantes poco a poco y solo los libres
+    // (RemoveRandomBots, desde #2774; antes drenaba la rotacion periodica).
     void ApplyPlayerScale(uint32 humanCount)
     {
 #ifdef WORLD_BOTS_WITH_PLAYERBOTS

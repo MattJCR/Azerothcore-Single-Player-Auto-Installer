@@ -53,6 +53,13 @@ jobs:
         with:
           path: mirrors/*.tar.gz
           key: snapshots-${{ hashFiles('mirrors/MANIFEST.tsv') }}
+      # La edición pública no lleva los .tar.gz de mirrors/. Sin ellos la fase 3 no tiene copia de
+      # respaldo cuando un upstream desaparece (mod-playerbots-wintergrasp, que dejó en rojo esta
+      # compilación mensual): se hidratan aquí, desde el asset de la versión «snapshots»
+      # (MIRROR_ASSET_BASE_URL de config.sh) o, si falta, reconstruyéndolos desde el upstream, y siempre
+      # verificados por SHA-256 contra MANIFEST.tsv.
+      - name: Hidratar los snapshots de mirrors/
+        run: bash install.sh --hidratar
       # La imagen del runner trae MySQL 8.0 preinstalado y el instalador pone el 8.4 de Oracle: se parte
       # de un Ubuntu sin MySQL, como en el servidor de un jugador.
       - name: Quitar el MySQL preinstalado del runner

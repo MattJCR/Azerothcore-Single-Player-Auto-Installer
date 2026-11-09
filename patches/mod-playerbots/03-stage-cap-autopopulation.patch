@@ -50,12 +50,20 @@ Rehecho contra mod-playerbots @ 79bd428115c8f33b74b13de23b133d49c3f75c60 (2026-1
 renombro las claves AiPlayerbot.* a Playerbots.* y los miembros de PlayerbotAIConfig a
 UpperCamelCase (randomBotMaxLevel -> RandomBotMaxLevel, etc.); la logica del parche no cambia.
 
+Actualizado 09/11/2026
+----------------------
+Rehecho contra mod-playerbots @ 405f81196161017eebae3ee7a612d786a3ed2a9d (2026-11-05). La #2774
+reescribio la rotacion de login: AddRandomBots() ya no calcula add_time/cooldown dentro de
+tryLoginBot (solo marca el evento "add" y mete el guid en currentBots; ProcessBot hace el login
+despues) y el lambda sigue sin mirar el nivel del personaje. La logica del parche no cambia: se
+descarta al candidato por encima de RandomBotMaxLevel justo antes de marcarlo.
+
 diff --git a/src/Bot/RandomPlayerbotMgr.cpp b/src/Bot/RandomPlayerbotMgr.cpp
 --- a/src/Bot/RandomPlayerbotMgr.cpp
 +++ b/src/Bot/RandomPlayerbotMgr.cpp
-@@ -765,6 +765,18 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
+@@ -783,6 +783,18 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
+                 (sPlayerbotAIConfig.DisableDeathKnightLogin && charInfo.rClass == CLASS_DEATH_KNIGHT))
                  return false;
-             }
  
 +            // Otro modulo puede haber bajado randomBotMaxLevel en caliente (p.ej.
 +            // una etapa de progresion): este personaje ya existe con el nivel que
@@ -69,6 +77,6 @@ diff --git a/src/Bot/RandomPlayerbotMgr.cpp b/src/Bot/RandomPlayerbotMgr.cpp
 +                return false;
 +            }
 +
-             uint32 add_time = sPlayerbotAIConfig.EnablePeriodicOnlineOffline
-                                 ? urand(sPlayerbotAIConfig.MinRandomBotInWorldTime,
-                                         sPlayerbotAIConfig.MaxRandomBotInWorldTime)
+             SetEventValue(charInfo.guid, "add", 1, YEAR);
+             currentBots.insert(charInfo.guid);
+ 

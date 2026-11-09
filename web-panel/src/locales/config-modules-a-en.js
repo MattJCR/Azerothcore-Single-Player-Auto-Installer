@@ -9,8 +9,7 @@ export default {
   "Playerbots.MaxRandomBots": "A high number means high CPU/memory load; the current server uses its own value, different from the .dist, so check before touching it. With WorldBots.PlayerScale.Enable=1 (mod_world_bots.conf), mod-world-bots overrides it live every few seconds according to the connected players: editing it here has no effect while that is active.",
   "Playerbots.RandomBotMinLevel": "Minimum level of random bots.",
   "Playerbots.RandomBotMaxLevel": "Maximum level of random bots.",
-  "Playerbots.MinRandomBotInWorldTime": "Minimum seconds a random bot stays in the world.",
-  "Playerbots.MaxRandomBotInWorldTime": "Maximum seconds a random bot stays in the world.",
+  "Playerbots.RandomBotCountMode": "How the number of connected bots changes: 0 fixed (rolled at start-up between Min and MaxRandomBots), 1 variable (re-rolled every so often), 2 scheduled (rises from Min to Max between RandomBotCountMinTime and RandomBotCountMaxTime). With WorldBots.PlayerScale.Enable=1 mod-world-bots sets Min = Max and the mode changes nothing.",
 
   // ── mod-autobalance ───────────────────────────────────────────────────
   "AutoBalance.Enable.Global": "Master switch for the whole module.",

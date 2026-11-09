@@ -65,10 +65,16 @@ Rehecho contra mod-playerbots @ 79bd428115c8f33b74b13de23b133d49c3f75c60 (2026-1
 renombro las claves AiPlayerbot.* a Playerbots.* y los miembros de PlayerbotAIConfig a
 UpperCamelCase (randomBotMaxLevel -> RandomBotMaxLevel, etc.); la logica del parche no cambia.
 
+Actualizado 09/11/2026
+----------------------
+Rebase del hunk de conf/playerbots.conf.dist contra mod-playerbots @ 405f81196161 (2026-11-05): el
+contexto cambio (la lista de GameObjects prohibidos pasa a "gameobject entries"). El resto del
+parche sigue igual.
+
 diff --git a/conf/playerbots.conf.dist b/conf/playerbots.conf.dist
 --- a/conf/playerbots.conf.dist
 +++ b/conf/playerbots.conf.dist
-@@ -330,6 +330,14 @@ Playerbots.LootRollRecipe = 0
+@@ -341,6 +341,14 @@ Playerbots.LootRollRecipe = 0
  # Default: 0 (disabled)
  Playerbots.LootRollDisenchant = 0
  
@@ -80,9 +86,9 @@ diff --git a/conf/playerbots.conf.dist b/conf/playerbots.conf.dist
 +# Default: 0 (disabled - bots roll immediately, same as real players)
 +Playerbots.LootRollAfterRealPlayersPass = 0
 +
- # A list of GameObject GUIDs that bots will not interact with.
- # List of default GUIDs:
- # QuestItems:
+ # A list of gameobject entries that bots will not interact with.
+ # Default: Half-Buried Bottle 2560, Waterlogged Envelope 2656, Solid Chest 2857, Water Barrel 3658,
+ #          Barrel of Milk 3705, Barrel of Sweet Nectar 3706, Food Crate 3719, Defias Gunpowder 17155,
 diff --git a/src/Ai/Base/Actions/LootRollAction.cpp b/src/Ai/Base/Actions/LootRollAction.cpp
 --- a/src/Ai/Base/Actions/LootRollAction.cpp
 +++ b/src/Ai/Base/Actions/LootRollAction.cpp
@@ -128,7 +134,7 @@ diff --git a/src/Ai/Base/Actions/LootRollAction.cpp b/src/Ai/Base/Actions/LootRo
 diff --git a/src/PlayerbotAIConfig.cpp b/src/PlayerbotAIConfig.cpp
 --- a/src/PlayerbotAIConfig.cpp
 +++ b/src/PlayerbotAIConfig.cpp
-@@ -711,6 +711,7 @@ bool PlayerbotAIConfig::Initialize()
+@@ -740,6 +740,7 @@ bool PlayerbotAIConfig::Initialize()
      LootRollRecipe = sConfigMgr->GetOption<bool>("Playerbots.LootRollRecipe", false);
      LootRollDisenchant = sConfigMgr->GetOption<bool>("Playerbots.LootRollDisenchant", false);
      LootGreedRollLevel = sConfigMgr->GetOption<bool>("Playerbots.LootGreedRollLevel", false);
@@ -139,7 +145,7 @@ diff --git a/src/PlayerbotAIConfig.cpp b/src/PlayerbotAIConfig.cpp
 diff --git a/src/PlayerbotAIConfig.h b/src/PlayerbotAIConfig.h
 --- a/src/PlayerbotAIConfig.h
 +++ b/src/PlayerbotAIConfig.h
-@@ -376,6 +376,7 @@ public:
+@@ -379,6 +379,7 @@ public:
      bool LootGreedRollLevel;
      bool LootRollRecipe;
      bool LootRollDisenchant;

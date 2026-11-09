@@ -96,14 +96,14 @@
 # Para actualizar el lock a lo instalado: ./install.sh --freeze
 #
 # nombre                      	rama        	commit                                  	fecha     	url
-core	Playerbot	3f2969ddb0da42b48b4fca050c02b19163ba1e20	2026-10-22	https://github.com/mod-playerbots/azerothcore-wotlk.git
+core	Playerbot	e7e2e288e7d9ec30e2dfe6f417178a95986fcbb2	2026-11-05	https://github.com/mod-playerbots/azerothcore-wotlk.git
 mod-1v1-arena	master	5ef5708d031f3b02283e6e599aa655bd320d904e	2026-03-25	https://github.com/azerothcore/mod-1v1-arena.git
 mod-ah-bot-plus	master	f685832994c825f90aa5a3dc0e1620aa568e875b	2026-07-02	https://github.com/NathanHandley/mod-ah-bot-plus.git
 mod-aoe-loot	master	957f9a1a686141d96c8b55e9431bfe2a0fb26e46	2026-10-31	https://github.com/azerothcore/mod-aoe-loot.git
 mod-quest-loot-party	master	c3955915c76d5a22a9d25a44482345d368a8de82	2026-10-12	https://github.com/pangolp/mod-quest-loot-party.git
 mod-autobalance	master	1d707cb61a0962ab01e4123681e2d3b66cc558a2	2026-10-07	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	master	1930525b9530d329cb9fe0504a3c9b5b40a12261	2025-11-25	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
-mod-congrats-on-level	master	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	2025-02-28	https://github.com/azerothcore/mod-congrats-on-level.git
+mod-congrats-on-level	master	925c2ae87c8a49983373da016a01338e7a8b63a9	2026-10-31	https://github.com/azerothcore/mod-congrats-on-level.git
 mod-dungeon-clear	master	0dfe558d6370d8b8bd94bba2ad75374975f2a833	2026-11-04	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	main	612eaf804cd7fc4af74fde66d376a571a5550077	2026-09-06	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guild-levels	main	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	2026-05-01	https://github.com/Old-Man-Warcraft/mod-guild-levels.git
@@ -111,7 +111,7 @@ mod-guildhouse	master	0b3cc14e947a859f8a7751a10676107d6316275b	2026-06-18	https:
 mod-individual-progression	master	e1795553d381e561ab5f37585566c22e23cdff73	2026-11-04	https://github.com/ZhengPeiRu21/mod-individual-progression.git
 mod-instanced-worldbosses	master	4c7a6310a748c199f79d7be2bbdcbc3191985bdc	2026-09-21	https://github.com/azerothcore/mod-instanced-worldbosses.git
 mod-instance-reset	master	1e2c20770f40f5382348b7649291371f47c86812	2026-03-23	https://github.com/azerothcore/mod-instance-reset.git
-mod-playerbots	master	e88cc4099e69f35126b28942a412ca702d20453b	2026-10-22	https://github.com/mod-playerbots/mod-playerbots.git
+mod-playerbots	master	405f81196161017eebae3ee7a612d786a3ed2a9d	2026-11-05	https://github.com/mod-playerbots/mod-playerbots.git
 mod-playerbots-wintergrasp	main	f83696b2e236a5c779db329f8b0f8f9d6c16c4e1	2026-10-18	https://github.com/vrzgames/mod-playerbots-wintergrasp.git
 mod-racial-trait-swap	main	8ae1e6fab13b4660eed76aca8fce998a18343048	2026-09-20	https://github.com/azerothcore/mod-racial-trait-swap.git
 mod-random-enchants	master	6d49d64918f1e798490d0139038a33194fd294df	2026-09-24	https://github.com/azerothcore/mod-random-enchants.git

@@ -608,20 +608,21 @@ BOTS_MAX=600   # máximo (03/09/2026: 600)
 # cualquiera dentro, fuera uno o varios. Con 300 y 1 jugador (el caso normal)
 # quedan ~300 en vez de 500-600 -de los ~24 MB/bot medidos, la mitad-, y sin
 # jugador DisabledWithoutRealPlayer sigue vaciando el mundo igual que antes,
-# sin relación con esto. Bajar el objetivo no expulsa a nadie de golpe: sólo
-# deja de admitir altas nuevas, la población de más drena sola por la
-# rotación periódica (BOTS_PERIODIC_ONLINE_OFFLINE).
+# sin relación con esto. Bajar el objetivo no expulsa a nadie de golpe: el
+# módulo retira bots poco a poco (RandomBotsPerInterval por pasada) y sólo los
+# libres; desde el 06/11/2026 (#2774), antes drenaba la rotación periódica.
 BOTS_PER_PLAYER_SCALE=true
 BOTS_PER_PLAYER=300
 BOTS_PER_PLAYER_CEILING=600
 BOTS_PER_PLAYER_SYNC_SECONDS=60
 
 # Cuentas de bot que mantiene el módulo (10 personajes cada una). Con 0 lo
-# calcula playerbots a partir de BOTS_MAX en cada arranque (con BOTS_MAX=600
-# le salen ~170) y crea las cuentas que falten solo. Fijarlo a mano por debajo
-# de ese número no sirve: playerbots lo sube al valor calculado y avisa en el
-# log ("RandomBotAccountCount=... es insuficiente"). Si se quiere fijar a mano
-# para dar margen a subir BOTS_MAX luego, poner un valor >= 170.
+# calcula playerbots a partir de BOTS_MAX en cada arranque y crea las cuentas
+# que falten solo (con la rotación eliminada el 06/11/2026, #2774, ya no
+# multiplica por el ratio: con BOTS_MAX=600 salen ~65 en vez de ~170; las
+# cuentas ya creadas se conservan). Fijarlo a mano por debajo de ese número no
+# sirve: playerbots lo sube al valor calculado y avisa en el log
+# ("RandomBotAccountCount ... is lower than the required calculated value").
 BOTS_ACCOUNT_COUNT=0
 
 # Nivel mínimo y máximo de los bots aleatorios
@@ -635,12 +636,24 @@ BOTS_DISABLED_WITHOUT_PLAYER=true
 # el ultimo jugador real (600 = 10 minutos).
 BOTS_NO_PLAYER_LOGOUT_DELAY=600
 
-# Los bots entran y salen por turnos, como gente real: de un conjunto el doble
-# de grande que BOTS_MAX (ratio 2.0 → 1000 de los 1500 personajes) hay BOTS_MAX
-# conectados en cada momento, y van rotando. Con el tiempo se estrenan más bots
-# y la población cambia de un día a otro. Decidido el 02/09/2026.
-BOTS_PERIODIC_ONLINE_OFFLINE=true
-BOTS_PERIODIC_RATIO=2.0
+# Cómo cambia el número de bots conectados (Playerbots.RandomBotCountMode).
+# La rotación por turnos de antes (EnablePeriodicOnlineOffline, ratio 2.0:
+# 1000 de los 1500 personajes, 02/09/2026) la eliminó mod-playerbots el
+# 06/11/2026 (#2774) y la sustituye este modo, que cambia la población de
+# verdad en vez de intercambiar bots:
+#   0 = estático: un número fijo entre BOTS_MIN y BOTS_MAX, tirado al arrancar
+#   1 = variable: se vuelve a tirar cada RandomBotCountChangeMin/MaxInterval
+#   2 = por horario: sube de BOTS_MIN (a las 5 h) a BOTS_MAX (a las 20 h) y baja
+# Con BOTS_PER_PLAYER_SCALE=true mod-world-bots fija min = max = objetivo en
+# caliente, así que el modo da igual (el objetivo sale exacto). Ahora, además,
+# bajar el objetivo SÍ retira bots (RemoveRandomBots: sin tocar a los que están
+# en campo de batalla, arena, mazmorra o en grupo con un jugador).
+BOTS_COUNT_MODE=0
+
+# Recolección de bots (RpgStatusProbWeight.DoGather, mod-playerbots #2539): peso de
+# que un bot con Herbalismo o Minería recorra la zona cogiendo nodos. 15 de fábrica;
+# 0 la apaga. Se prueba y mide en UPD-O (PLAN.md).
+BOTS_RPG_DO_GATHER=0
 
 # Porcentaje de bots que simula de verdad cuando no hay ningún jugador cerca.
 # Es el mando "cuánto vive el mundo lejos de ti" contra CPU: los bots de TU zona
@@ -783,13 +796,6 @@ BOTS_LEVEL_BRACKETS_SYNC_FACTIONS=true
 # Cuota fija de nivel 80 retirada. Cero conserva la plantilla uniforme al
 # regenerar el conf; con el reparto dinámico activo tampoco gobierna el runtime.
 BOTS_LEVEL80_PCT=0
-
-# Cuánto se queda un bot en el mundo antes de que se le pueda rotar (segundos).
-# El .conf.dist del módulo trae 600 (10 min) y el código de playerbots usa 7200
-# por defecto. Con 10 minutos hay trasiego constante y cada re-entrada de un bot
-# de entrenamiento cuesta un Randomize completo (03/09/2026).
-BOTS_WORLD_TIME_MIN=7200
-BOTS_WORLD_TIME_MAX=28800
 
 # ── Arenas puntuadas ─────────────────────────────────────────────────────────
 # El módulo crea equipos de arena de bots (10 de 2c2, 10 de 3c3, 5 de 5c5) pero

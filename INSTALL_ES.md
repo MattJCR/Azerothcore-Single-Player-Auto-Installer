@@ -572,8 +572,8 @@ versión fijada (b949b50b, 04/09/2026; el `.conf.dist` no cambió desde 2f7d9f77
 |---|---|---|---|
 | `BOTS_MIN` / `BOTS_MAX` | `Playerbots.MinRandomBots` / `MaxRandomBots` | **500 / 600** (desde 03/09/2026; antes 400/500 y 200/250) | El módulo elige un objetivo entre los dos y lo cambia cada 30-120 min. **Es cuántos bots llegan a existir de verdad**: se despierta hasta ese tope y a cada bot se le tira el dado del nivel la primera vez; el resto se queda en la reserva a nivel 1. Se subió para que mod-world-bots tenga de dónde sacar bots de tu tramo sin vaciar el resto del mundo. El dist trae 500/500. **Pendiente de vigilar la memoria**: con 153 bots el worldserver ocupaba 3,7 GB |
 | `BOT_ACTIVE_ALONE` | `BotActiveAlone` | 10 | Porcentaje de bots que simula de verdad lejos de cualquier jugador. Los de tu zona se despiertan siempre (`BotActiveAloneForceWhenInZone = 1`, del dist). Es lo que contiene el coste de 400-500 bots |
-| `BOTS_PERIODIC_ONLINE_OFFLINE` / `BOTS_PERIODIC_RATIO` | `EnablePeriodicOnlineOffline` / `PeriodicOnlineOfflineRatio` | **true** / 2.0 (desde 02/09/2026) | Los bots entran y salen por turnos, como gente real: de un conjunto de 2 × `BOTS_MAX` (1000 de los 1500) hay `BOTS_MAX` conectados y van rotando. Con el tiempo se estrenan más bots y la población cambia de un día a otro |
-| `BOTS_ACCOUNT_COUNT` | `Playerbots.RandomBotAccountCount` | 150 | 10 personajes por cuenta → 1500 bots en la reserva |
+| `BOTS_COUNT_MODE` | `Playerbots.RandomBotCountMode` | 0 (desde 09/11/2026) | Cómo cambia el número de bots conectados: 0 fijo entre `BOTS_MIN` y `BOTS_MAX` (tirado al arrancar), 1 variable (se vuelve a tirar cada cierto tiempo), 2 por horario (sube de `BOTS_MIN` a las 5 h a `BOTS_MAX` a las 20 h). Sustituye a la rotación por turnos (`EnablePeriodicOnlineOffline`), que mod-playerbots eliminó el 06/11/2026 (#2774). Con `BOTS_PER_PLAYER_SCALE` mod-world-bots fija min = max, así que el modo no cambia nada; bajar el objetivo ahora retira bots (los libres) en vez de esperar a la rotación |
+| `BOTS_ACCOUNT_COUNT` | `Playerbots.RandomBotAccountCount` | 0 (calculado) | 10 personajes por cuenta. Con 0 playerbots lo calcula de `BOTS_MAX` (sin la rotación ya no multiplica por 2: ~65 cuentas con 600) y crea las que falten; las ya creadas se conservan y se pueden despertar, pero la reserva ya no tiene que ser el doble de la población |
 | `BOTS_LEVEL_MIN` / `MAX` | `RandomBotMinLevel` / `MaxLevel` | 1 / 80 | |
 | `BOTS_DISABLED_WITHOUT_PLAYER` | `DisabledWithoutRealPlayer` | **true** | Los bots aleatorios solo aparecen con un jugador real. Al salir el último, se desconectan tras 10 minutos (`BOTS_NO_PLAYER_LOGOUT_DELAY=600`). |
 | `BOTS_MAX_PER_PLAYER` | `MaxAddedBots` | 40 | Tope de bots propios en tu banda. Con 4 no se podía formar una banda, y con individual-progression la progresión **es** la banda |
@@ -594,7 +594,6 @@ versión fijada (b949b50b, 04/09/2026; el `.conf.dist` no cambió desde 2f7d9f77
 | `BOTS_LEVEL_BRACKETS_SYNC_FACTIONS` | `LevelBrackets.Dynamic.SyncFactions` | **true** | Alianza y Horda siguen el mismo bracket |
 | `BOTS_LEVEL_BRACKETS_PLAYER_WEIGHT` | `LevelBrackets.Dynamic.RealPlayerWeight` | 1000.0 | Respaldo si el parche faltase; con `HighestPlayerOnly` activo no decide el reparto |
 | `BOTS_LEVEL80_PCT` | porcentajes `LevelBrackets.<facción>.Range*.Pct` | 0 | No impone ninguna cuota fija de nivel 80. `mod-adaptive-ai` está archivado |
-| `BOTS_WORLD_TIME_MIN` / `_MAX` | `Playerbots.MinRandomBotInWorldTime` / `Max...` | 7200 / 28800 | Segundos que un bot se queda en el mundo antes de que se le pueda rotar |
 
 > ⚠️ Para mover un bot de franja, LevelBrackets lo **re-rula entero** con
 > `PlayerbotFactory::Randomize()`: nivel, equipo, talentos y misiones. Es el
@@ -1905,6 +1904,14 @@ Detalles que cuestan un intento fallido si no se saben:
   reaplicar a mano el SQL anterior del módulo si corrió a medias (el actualizador no lo repite, el hash es el ya
   registrado) y repetir `./install.sh --only 5` entero. Conviene comprobar el SQL de cada commit nuevo contra el
   core fijado **antes** de desplegar (punto 2 del orden fijo).
+- **Si lo que necesita el módulo es justo el core que se actualiza a la vez** (caso del 09/11/2026: core,
+  mod-playerbots y congrats juntos), la fase 5 falla igual la primera vez, porque el core crea
+  `acore_string_locale` al migrar su base de datos en su primer arranque. Orden que funcionó: `--only 3`, `--only 4`,
+  `--only 5` (falla en el SQL de congrats), **arrancar el worldserver una vez** (`sudo systemctl start ac-worldserver`;
+  con la conf a medias sólo migra y cae, es lo esperado), pararlo (`sudo systemctl stop ac-worldserver`, con el socket
+  parado) y repetir `--only 5` entero. Esos arranques fallidos dejan el reino con `flag=3` en
+  `acore_auth.realmlist` y el authserver se niega a arrancar («No valid realms specified»): devolverlo al valor que
+  tenía con el worldserver parado (`UPDATE realmlist SET flag=2 WHERE id=1`, está en la copia previa) y reiniciar el authserver.
 
 Si todo va bien: `./install.sh --mirror` y traer `mirrors/` al repo (§8): es el paso 6 del orden fijo, obligatorio en cada actualización.
 

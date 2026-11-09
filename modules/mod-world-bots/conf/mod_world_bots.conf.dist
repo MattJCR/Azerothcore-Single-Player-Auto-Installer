@@ -545,10 +545,9 @@ WorldBots.Stage.SyncSeconds = 60
 #
 #    WorldBots.PlayerScale.SyncSeconds
 #        Descripcion: Cada cuanto se recalcula el objetivo. Bajarlo no
-#                     expulsa bots de golpe -solo se deja de admitir altas
-#                     nuevas hasta que EnablePeriodicOnlineOffline (o un
-#                     reinicio) rebaje la poblacion sola-, asi que no hace
-#                     falta que sea muy corto. Un intervalo 0 desactiva la
+#                     expulsa bots de golpe -playerbots retira los de mas poco
+#                     a poco y solo los libres (RemoveRandomBots)-, asi que
+#                     no hace falta que sea muy corto. Un intervalo 0 desactiva la
 #                     comprobacion (el ultimo objetivo aplicado se queda fijo).
 #        Por defecto: 60
 #

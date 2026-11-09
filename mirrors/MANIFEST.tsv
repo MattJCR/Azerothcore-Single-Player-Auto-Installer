@@ -1,14 +1,14 @@
 # MANIFEST.tsv — copias offline de los repositorios de terceros
-# Generado por ./install.sh --mirror el 2026-11-06 14:13:34
+# Generado por ./install.sh --mirror el 2026-11-09 10:47:12
 #
 # nombre                      	commit                                  	tamano      	fichero
-core	3f2969ddb0da42b48b4fca050c02b19163ba1e20	224362911	core@3f2969ddb0da.tar.gz	d31182a3da9769c4d0d514e78f26c367e61be123860fd9d04d08eded90ce3368	https://github.com/mod-playerbots/azerothcore-wotlk.git
+core	e7e2e288e7d9ec30e2dfe6f417178a95986fcbb2	224388461	core@e7e2e288e7d9.tar.gz	30355ac752b06b96e43afe2baf45fb264b579cca936da4b01bc5cc29a6142d7c	https://github.com/mod-playerbots/azerothcore-wotlk.git
 mod-1v1-arena	5ef5708d031f3b02283e6e599aa655bd320d904e	372516	mod-1v1-arena@5ef5708d031f.tar.gz	39dc3e18268c21c922bee24109fe297707c2c46084614f9b1b7acc1276670449	https://github.com/azerothcore/mod-1v1-arena.git
 mod-ah-bot-plus	f685832994c825f90aa5a3dc0e1620aa568e875b	468119	mod-ah-bot-plus@f685832994c8.tar.gz	e2dc60d56416b9de8ef5568fcdf18bbbd92b9bd1428826d6b123c4184eb0d2ea	https://github.com/NathanHandley/mod-ah-bot-plus.git
 mod-aoe-loot	957f9a1a686141d96c8b55e9431bfe2a0fb26e46	32950	mod-aoe-loot@957f9a1a6861.tar.gz	4ea384ed4a1a9bac7bba4b126ee302283140f9c7bd5f3b536e4b1555e6dbc970	https://github.com/azerothcore/mod-aoe-loot.git
 mod-autobalance	1d707cb61a0962ab01e4123681e2d3b66cc558a2	107942	mod-autobalance@1d707cb61a09.tar.gz	a2299294db704acd3a7471c01b31afc2f05ab97df34958f1fa104eda80e2129a	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	1930525b9530d329cb9fe0504a3c9b5b40a12261	10752	mod-challenge-modes@1930525b9530.tar.gz	465dc529aa7f2255675d552da87e4f9429510e829b6513fef017bfab190f47e1	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
-mod-congrats-on-level	fed4752e0cd71db7faa4d6f9f4650f5377d2f31c	19364	mod-congrats-on-level@fed4752e0cd7.tar.gz	2bdb0476c3d822f599b5de81949a87c761efed703805f781932042a41afbab34	https://github.com/azerothcore/mod-congrats-on-level.git
+mod-congrats-on-level	925c2ae87c8a49983373da016a01338e7a8b63a9	19362	mod-congrats-on-level@925c2ae87c8a.tar.gz	f681d8beebd7fd5cbcb537d9d0ca2dde18b1683fe62960fbfbf5ffdd9a0e2b35	https://github.com/azerothcore/mod-congrats-on-level.git
 mod-dungeon-clear	0dfe558d6370d8b8bd94bba2ad75374975f2a833	3386196	mod-dungeon-clear@0dfe558d6370.tar.gz	1c7fc6f6dbd676abb688cb1e46b22c176c6bca7caf8329e8a400c02cc1f1023f	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	612eaf804cd7fc4af74fde66d376a571a5550077	86625	mod-dungeon-master@612eaf804cd7.tar.gz	f56ef9a78421703002ee769ade87562c0e583b8454218135035a191b303035c5	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guildhouse	0b3cc14e947a859f8a7751a10676107d6316275b	32680	mod-guildhouse@0b3cc14e947a.tar.gz	e000cdaea194472108490a6b9704420119ef75f7571db8659b255e2140d760fc	https://github.com/azerothcore/mod-guildhouse.git
@@ -16,7 +16,7 @@ mod-guild-levels	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	16881	mod-guild-levels
 mod-individual-progression	e1795553d381e561ab5f37585566c22e23cdff73	36313443	mod-individual-progression@e1795553d381.tar.gz	8715660303c65930edec96c5ec1947b060f21541a1c685da2a9ec3942076274b	https://github.com/ZhengPeiRu21/mod-individual-progression.git
 mod-instanced-worldbosses	4c7a6310a748c199f79d7be2bbdcbc3191985bdc	11051	mod-instanced-worldbosses@4c7a6310a748.tar.gz	289b4e0635e6e6b8105fc8369675eeb65c9d87a38fef272a8393628f933ec4ab	https://github.com/azerothcore/mod-instanced-worldbosses.git
 mod-instance-reset	1e2c20770f40f5382348b7649291371f47c86812	8181	mod-instance-reset@1e2c20770f40.tar.gz	ba1db177e6e08598a3b54e76a6106c963ae5886da3cf1e2d7b2ade46b7d88bd6	https://github.com/azerothcore/mod-instance-reset.git
-mod-playerbots	e88cc4099e69f35126b28942a412ca702d20453b	21856587	mod-playerbots@e88cc4099e69.tar.gz	5cc5067b0e714bfa02476b60bf897ed6c2e77b1932981dbbc0f5c45755dc2a7e	https://github.com/mod-playerbots/mod-playerbots.git
+mod-playerbots	405f81196161017eebae3ee7a612d786a3ed2a9d	21942082	mod-playerbots@405f81196161.tar.gz	a262dc74e57b68791a2dda9bd513f7502cd51fecfc845195b2537c5c7887f005	https://github.com/mod-playerbots/mod-playerbots.git
 mod-playerbots-wintergrasp	f83696b2e236a5c779db329f8b0f8f9d6c16c4e1	114297	mod-playerbots-wintergrasp@f83696b2e236.tar.gz	ec10b7c7f6c6bfc185e85b237e5ee88e9f08e46243f3b37e31fbcbad4ea0392d	https://github.com/vrzgames/mod-playerbots-wintergrasp.git
 mod-profession-experience	d1bd97085d27bb8de11d13af097d02460556b0f3	18666	mod-profession-experience@d1bd97085d27.tar.gz	9962bc1f79f0bc374531d9fd4698338e4d478a46e6ff0f6a73fec86e57e31431	https://github.com/Tereneckla/mod-profession-experience.git
 mod-quest-loot-party	c3955915c76d5a22a9d25a44482345d368a8de82	17311	mod-quest-loot-party@c3955915c76d.tar.gz	9cada6d38a28219f01a108927619048290abb282ad9eddd915d2c505009d1ac3	https://github.com/pangolp/mod-quest-loot-party.git
