@@ -652,8 +652,10 @@ BOTS_COUNT_MODE=0
 
 # Recolección de bots (RpgStatusProbWeight.DoGather, mod-playerbots #2539): peso de
 # que un bot con Herbalismo o Minería recorra la zona cogiendo nodos. 15 de fábrica;
-# 0 la apaga. Se prueba y mide en UPD-O (PLAN.md).
-BOTS_RPG_DO_GATHER=0
+# 0 la apaga. 5 desde el 09/11/2026 (UPD-O): con 292 bots y un jugador dentro no sube el
+# coste del servidor (media 3,9 ms frente a 4,7 con 0; p99 11,9 frente a 18,1, misma
+# población). No se ha podido comprobar que recolecten de verdad (ver CHANGELOG).
+BOTS_RPG_DO_GATHER=5
 
 # Porcentaje de bots que simula de verdad cuando no hay ningún jugador cerca.
 # Es el mando "cuánto vive el mundo lejos de ti" contra CPU: los bots de TU zona
