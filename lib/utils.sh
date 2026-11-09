@@ -746,6 +746,30 @@ _module_tree_diff() {
 #
 # Devuelve 1 si falta algún parche por aplicar.
 # =============================================================================
+
+# Parches sobre una foto sin git (módulo restaurado de mirrors/). No hay árbol que comparar, así
+# que cada parche, en orden: si aplica, se aplica; si su inversa aplica, ya estaba puesto; si no,
+# error. GIT_CEILING_DIRECTORIES evita que `git apply` suba hasta el repositorio del core (que
+# contiene modules/) y tome las rutas del parche como relativas a su raíz.
+_apply_patches_to_snapshot() {
+    local MODULE="$1" DIR="$2"; shift 2
+    local P
+    for P in "$@"; do
+        if GIT_CEILING_DIRECTORIES="$AC_DIR/modules" git -C "$DIR" apply --unidiff-zero --check "$P" >/dev/null 2>&1; then
+            GIT_CEILING_DIRECTORIES="$AC_DIR/modules" git -C "$DIR" apply --unidiff-zero "$P"
+            log "[$MODULE] parche aplicado (copia offline, sin git): $(basename "$P")"
+        elif GIT_CEILING_DIRECTORIES="$AC_DIR/modules" git -C "$DIR" apply --unidiff-zero --reverse --check "$P" >/dev/null 2>&1; then
+            info "[$MODULE] $(basename "$P") ya estaba aplicado (copia offline, sin git)."
+        else
+            error "[$MODULE] el parche $(basename "$P") NO aplica sobre la copia offline."
+            error "  Seguramente la foto no es la versión contra la que se escribió. Revísalo en:"
+            error "  $P"
+            return 1
+        fi
+    done
+    return 0
+}
+
 apply_module_patches() {
     local MODULE="$1"; shift
     local -a PATCHES=("$@")
@@ -754,10 +778,6 @@ apply_module_patches() {
     [ "$MODULE" = core ] && DIR="$AC_DIR"
     [ "$N" -gt 0 ] || return 0
 
-    if [ ! -d "$DIR/.git" ]; then
-        warn "[$MODULE] no está clonado — no se aplican sus $N parches"
-        return 1
-    fi
     local P
     for P in "${PATCHES[@]}"; do
         if [ ! -f "$P" ]; then
@@ -765,6 +785,19 @@ apply_module_patches() {
             return 1
         fi
     done
+
+    if [ ! -d "$DIR/.git" ]; then
+        # Sin carpeta: no está instalado. Con carpeta y sin .git: foto restaurada desde mirrors/
+        # (restore_from_mirror: el upstream ya no existe o no hay red), sin historia de git. Hasta
+        # el 09/11/2026 aquí se abortaba, así que la copia de respaldo se restauraba pero la fase 3
+        # no podía ponerle sus parches (CI-A: mod-playerbots-wintergrasp en la compilación mensual).
+        if [ ! -d "$DIR" ] || [ "$MODULE" = core ]; then
+            warn "[$MODULE] no está clonado — no se aplican sus $N parches"
+            return 1
+        fi
+        _apply_patches_to_snapshot "$MODULE" "$DIR" "${PATCHES[@]}"
+        return $?
+    fi
 
     local CURRENT
     CURRENT="$(_module_tree_diff "$DIR")"

@@ -74,6 +74,7 @@ jobs:
       - run: bash tests/set-conf-value.sh
       - run: bash tests/apply-panel-config.sh
       - run: bash tests/core-patches.sh
+      - run: bash tests/parches-copia-offline.sh
       - run: bash tests/hidratar-mirrors.sh
       - run: bash tests/datos-cliente.sh
       - run: bash tests/proteger-cliente-sintetico.sh --autotest
