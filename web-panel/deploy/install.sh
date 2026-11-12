@@ -327,7 +327,7 @@ echo "[4/8] Preparando la cuenta de servicio SOAP…"
 # SOAP del worldserver (ACSoap.cpp exige gmlevel >= 3). Igual que la cuenta de
 # administrador de lib/utils.sh: SRP6 calculado con lib/srp6.py, sin que el
 # servidor tenga que estar arrancado, e idempotente (si ya existe no se le
-# toca la contraseña).
+# toca la contraseña, salvo que sea demasiado larga: ver abajo).
 SOAP_USERNAME=""
 SOAP_PASSWORD=""
 if [ -f "$ENV_FILE" ]; then
@@ -335,11 +335,21 @@ if [ -f "$ENV_FILE" ]; then
     SOAP_PASSWORD="$(sed -n 's/^SOAP_PASSWORD=//p' "$ENV_FILE" | head -n 1)"
 fi
 SOAP_USERNAME="${SOAP_USERNAME:-$SOAP_ACCOUNT}"
-SOAP_PASSWORD="${SOAP_PASSWORD:-$(openssl rand -hex 24)}"
+# AccountMgr::CheckPassword del core rechaza las contraseñas de más de
+# MAX_PASS_STR (16) caracteres, y ACSoap contesta 401 sin más: una contraseña
+# de 48 caracteres deja el SOAP inservible. Las instalaciones anteriores
+# generaban 48 (openssl rand -hex 24): si la guardada es más larga se
+# regenera y se reescribe el verificador de la cuenta.
+SOAP_RESET=0
+if [ "${#SOAP_PASSWORD}" -gt 16 ]; then
+    SOAP_PASSWORD=""
+    SOAP_RESET=1
+fi
+SOAP_PASSWORD="${SOAP_PASSWORD:-$(openssl rand -hex 8)}"
 SOAP_UPPER="$(printf '%s' "$SOAP_USERNAME" | tr '[:lower:]' '[:upper:]')"
 
 SOAP_ACCOUNT_ID="$(mysql -NBe "SELECT id FROM \`$AUTH_DB\`.account WHERE username='${SOAP_UPPER}';")"
-if [ -z "$SOAP_ACCOUNT_ID" ]; then
+if [ -z "$SOAP_ACCOUNT_ID" ] || [ "$SOAP_RESET" = 1 ]; then
     PYTHON_BIN=""
     for CANDIDATE in python3 python; do
         command -v "$CANDIDATE" >/dev/null 2>&1 || continue
@@ -352,7 +362,11 @@ if [ -z "$SOAP_ACCOUNT_ID" ]; then
     SRP="$("$PYTHON_BIN" "$REPO_DIR/lib/srp6.py" "$SOAP_USERNAME" "$SOAP_PASSWORD")"
     SOAP_SALT="${SRP%% *}"
     SOAP_VERIFIER="${SRP##* }"
-    mysql -e "INSERT INTO \`$AUTH_DB\`.account (username, salt, verifier, expansion) VALUES ('${SOAP_UPPER}', UNHEX('${SOAP_SALT}'), UNHEX('${SOAP_VERIFIER}'), 2);"
+    if [ -z "$SOAP_ACCOUNT_ID" ]; then
+        mysql -e "INSERT INTO \`$AUTH_DB\`.account (username, salt, verifier, expansion) VALUES ('${SOAP_UPPER}', UNHEX('${SOAP_SALT}'), UNHEX('${SOAP_VERIFIER}'), 2);"
+    else
+        mysql -e "UPDATE \`$AUTH_DB\`.account SET salt=UNHEX('${SOAP_SALT}'), verifier=UNHEX('${SOAP_VERIFIER}') WHERE id=${SOAP_ACCOUNT_ID};"
+    fi
     SOAP_ACCOUNT_ID="$(mysql -NBe "SELECT id FROM \`$AUTH_DB\`.account WHERE username='${SOAP_UPPER}';")"
 fi
 mysql -e "REPLACE INTO \`$AUTH_DB\`.account_access (id, gmlevel, RealmID, comment) VALUES (${SOAP_ACCOUNT_ID}, 3, -1, 'cuenta de servicio SOAP del panel');"

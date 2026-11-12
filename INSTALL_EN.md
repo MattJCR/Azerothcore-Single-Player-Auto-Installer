@@ -1622,7 +1622,11 @@ the data of the most common zones (about 2.4 GB, several minutes) so the first v
 not wait for the network; when it finishes it says whether everything was downloaded or it ran out
 of room (the browser limits what it lets a site store). Without pressing it the game works the
 same: what is missing is fetched while you play, and the background preload picks zones by where
-the character is.
+the character is. While you are in a zone, that preload also downloads everything the zone needs
+(terrain and neighbouring zones, creatures, objects and their gear, music and ambient sound, minimap
+and world map), derived from the game data itself rather than from a walk-through: between 40 MB and
+1.5 GB per zone; all zones together add up to about 7 GB, and the browser keeps only what it allows
+(it discards the oldest). These lists are not part of "Prepare the game".
 
 **Inside the game.** *Video → Graphics enhancements*: render scale and scaling filter,
 sharpening, edge smoothing (FXAA and 4x MSAA), colour and tone, bloom, ambient occlusion and

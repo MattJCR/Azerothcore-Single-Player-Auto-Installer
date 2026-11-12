@@ -1,5 +1,5 @@
 # MANIFEST.tsv — copias offline de los repositorios de terceros
-# Generado por ./install.sh --mirror el 2026-11-09 10:47:12
+# Generado por ./install.sh --mirror el 2026-11-12 16:15:40
 #
 # nombre                      	commit                                  	tamano      	fichero
 core	e7e2e288e7d9ec30e2dfe6f417178a95986fcbb2	224388461	core@e7e2e288e7d9.tar.gz	30355ac752b06b96e43afe2baf45fb264b579cca936da4b01bc5cc29a6142d7c	https://github.com/mod-playerbots/azerothcore-wotlk.git
@@ -9,7 +9,7 @@ mod-aoe-loot	957f9a1a686141d96c8b55e9431bfe2a0fb26e46	32950	mod-aoe-loot@957f9a1
 mod-autobalance	1d707cb61a0962ab01e4123681e2d3b66cc558a2	107942	mod-autobalance@1d707cb61a09.tar.gz	a2299294db704acd3a7471c01b31afc2f05ab97df34958f1fa104eda80e2129a	https://github.com/azerothcore/mod-autobalance.git
 mod-challenge-modes	1930525b9530d329cb9fe0504a3c9b5b40a12261	10752	mod-challenge-modes@1930525b9530.tar.gz	465dc529aa7f2255675d552da87e4f9429510e829b6513fef017bfab190f47e1	https://github.com/ZhengPeiRu21/mod-challenge-modes.git
 mod-congrats-on-level	925c2ae87c8a49983373da016a01338e7a8b63a9	19362	mod-congrats-on-level@925c2ae87c8a.tar.gz	f681d8beebd7fd5cbcb537d9d0ca2dde18b1683fe62960fbfbf5ffdd9a0e2b35	https://github.com/azerothcore/mod-congrats-on-level.git
-mod-dungeon-clear	0dfe558d6370d8b8bd94bba2ad75374975f2a833	3386196	mod-dungeon-clear@0dfe558d6370.tar.gz	1c7fc6f6dbd676abb688cb1e46b22c176c6bca7caf8329e8a400c02cc1f1023f	https://github.com/jrad7/mod-dungeon-clear.git
+mod-dungeon-clear	484c802b2f4534a935b7d20cbb29e27d72d388e2	3392723	mod-dungeon-clear@484c802b2f45.tar.gz	aace36d3fd270b2f5fd2e4782f8b52764e860742e6cdd5eb0f154000b7bce1be	https://github.com/jrad7/mod-dungeon-clear.git
 mod-dungeon-master	612eaf804cd7fc4af74fde66d376a571a5550077	86625	mod-dungeon-master@612eaf804cd7.tar.gz	f56ef9a78421703002ee769ade87562c0e583b8454218135035a191b303035c5	https://github.com/InstanceForge/mod-dungeon-master.git
 mod-guildhouse	0b3cc14e947a859f8a7751a10676107d6316275b	32680	mod-guildhouse@0b3cc14e947a.tar.gz	e000cdaea194472108490a6b9704420119ef75f7571db8659b255e2140d760fc	https://github.com/azerothcore/mod-guildhouse.git
 mod-guild-levels	f1ef557a7e93da13c69bc50e5ccd3bad49d199df	16881	mod-guild-levels@f1ef557a7e93.tar.gz	b5b4477c182afa248c5e24eb6ef3b57e63766c0ee245d5abe50fc7207cb575e3	https://github.com/Old-Man-Warcraft/mod-guild-levels.git

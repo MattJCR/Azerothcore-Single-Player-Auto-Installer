@@ -1598,7 +1598,11 @@ funciona en navegadores con selector de carpetas (Chrome, Edge y Brave; en Brave
 las zonas más habituales (unos 2,4 GB, varios minutos) para que la primera visita a cada una no
 espere a la red; al terminar avisa de si bajó todo o se quedó sin sitio (el navegador limita lo que
 deja guardar). Sin pulsarlo el juego funciona igual: lo que falta se baja mientras se juega, y la
-precarga en segundo plano elige las zonas por donde está el personaje.
+precarga en segundo plano elige las zonas por donde está el personaje. Estando dentro de una zona, esa
+precarga baja además todo lo que la zona necesita (terreno y zonas vecinas, criaturas, objetos y su equipo,
+música y sonido ambiente, minimapa y mapa del mundo), derivado de los propios datos del juego y no de un
+recorrido: entre 40 MB y 1,5 GB por zona; todas las zonas juntas suman unos 7 GB, y el navegador guarda
+sólo lo que le deja (descarta lo más antiguo). Estas listas no entran en «Preparar el juego».
 
 **Dentro del juego.** *Vídeo → Mejoras gráficas*: escala de render y filtro de ampliación, nitidez,
 suavizado de bordes (FXAA y MSAA 4x), color y tono, resplandor, oclusión ambiental y agua

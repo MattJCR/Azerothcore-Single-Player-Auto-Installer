@@ -17,6 +17,34 @@
 > **Cliente de juego en el navegador.** Las entradas de su construcción (del 28/10 al 05/11/2026) se llevan en un
 > registro aparte, `CHANGELOG-CLIENTE-WEB.md`, que sólo existe en el repositorio de trabajo.
 
+## 12/11/2026 (16:30) — mod-dungeon-clear a `484c802` (5 commits)
+
+**Hecho:** `versions.lock` de `0dfe558` a `484c802` (07/11/2026). Es el único de los 25 repositorios consultables con novedades; no había PR nuevos en GitHub (los 1 y 2 son pruebas, cerradas) y `mod-playerbots-wintergrasp` sigue sin poder consultarse (su upstream desapareció; la instalación usa `mirrors/` y el asset de snapshots).
+
+**Qué trae (leído el código, no sólo el título):** (1) `fix(loot)`: `DungeonClearAllClearedTrigger` ya no da la mazmorra por terminada en cuanto cae el último jefe; mantiene la ejecución mientras haya una tirada de botín abierta (`Group::GetRolls`) o un cadáver de jefe del grupo sin saquear dentro de rango, con tope `kFinalLootWaitMs`, de modo que un cadáver que nadie puede saquear no la cuelga; el estado nuevo es `DcRunState::finalLootHoldSinceMs` y `DungeonClearAdvanceAction` cede el tick mientras dura la espera. (2) Botín raro o mejor en el registro de ejecuciones y en la tarjeta «Live» del panel de pruebas del módulo (`testdeck`), que es herramienta del propio módulo. (3) Dos arreglos de la CI del módulo. Sin `conf`, SQL, claves nuevas ni comandos nuevos (nada que dar de alta en `mod-server-help` ni en el panel). Sin parche propio sobre este módulo.
+
+**Despliegue:** copia previa `~/backup-20261112-1611`; `--only 3` (el módulo queda en `484c802`), `--only 4` (compila, 3 min 16 s), `--only 5` (sin claves nuevas sin declarar; las advertencias vistas son las conocidas) y arranque de authserver y socket; el worldserver, en modo en espera, despertó con la conexión del verificador (`NRestarts=0`). Casos del cliente sintético: `diagnostico` (6/6, también al terminar) y `modulos` (14/14, con `.dc config` respondiendo). `--mirror` + `--verify-mirrors` (26 copias, md5 iguales a ambos lados); `mirrors/` traído al repo con el tarball viejo fuera; copia del lock del panel (`/opt/azerothcore-panel/update-locks/versions.lock`) actualizada a mano porque no se usó `--freeze` (borra los comentarios del lock); segunda pasada de `revisar-actualizaciones` para que el aviso del juego diga «todo al día».
+
+**No verificado:** el arreglo del botín en una mazmorra real. El caso `mazmorra` dura unas 4 h y la ejecución conocida de BFD se atasca antes, en el pasaje de Sarevess (fallo anterior de upstream); no se ha lanzado.
+
+**Pendiente:** el snapshot nuevo (`mod-dungeon-clear@484c802b2f45.tar.gz`) no está subido como asset de GitHub; hasta que se ordene enviar a GitHub (`python docs/publicacion/subir-snapshots.py --subir --podar`), la instalación pública depende del upstream de este módulo. Sin restos de prueba: el personaje temporal de `modulos` se borró (`diagnostico` en verde).
+
+## 09/11/2026 (14:50) — UPD-O cerrado: los bots recolectan; caso `bots-recoleccion`
+
+**Resultado:** con `DoGather` a 5 (`BOTS_RPG_DO_GATHER`), 77 de 80 bots recolectores conectados contestaron al susurro `rpg status` de un GM y **3 estaban en `DO_GATHER`** (el resto: IDLE 19, GO_GRIND 18, WANDER_NPC 14, DO_QUEST 8, TRAVEL_FLIGHT 8, GO_CAMP 4, WANDER_RANDOM 3). El valor se queda en 5, que ya se había medido sin coste apreciable.
+
+**Hipótesis descartadas:** `.playerbots inspect <bot> action` devuelve vacío en todos (el registro de acciones sólo se llena con bots en grupo con un cliente humano) y `values`, `travel` y `movement` no muestran el estado de RPG; `gameobject_respawn` no sirve (no se persisten los respawn de los nodos). El estado sí sale del susurro `rpg status` (`TellRpgStatusAction`), que un GM puede enviar a cualquier bot.
+
+**Nuevo caso** `bots-recoleccion` (`tools/cliente-sintetico`, fila en `COBERTURA.md`): el personaje de prueba espera a que se pueblen los bots, susurra `rpg status` a la lista de nombres pasada en `bots` (la consulta SQL está en su descripción) y cuenta los `DO_GATHER`; un 0 es AVISO, no FALLO, porque es una fotografía de un instante. Las 64 pruebas de `tests/test_cliente_sintetico.py` siguen en verde.
+
+## 09/11/2026 (14:30) — SOAP 401 del panel: la contraseña de la cuenta de servicio era demasiado larga
+
+**Síntoma:** el SOAP del worldserver contestaba `401` a la cuenta `panel_soap` aunque el verificador SRP6 de la BD coincidía con la contraseña de `/etc/azerothcore-panel.env`. Con el worldserver en modo en espera el puerto 7878 está cerrado (la prueba da `000`, no 401): hay que despertarlo antes con una conexión al 8085.
+
+**Causa (hipótesis comprobada leyendo el core fijado, `mirrors/`):** `ACSoap.cpp` devuelve 401 cuando `AccountMgr::CheckPassword` falla, y esta rechaza **cualquier contraseña de más de `MAX_PASS_STR` (16) caracteres** antes de mirar el verificador. `web-panel/deploy/install.sh` generaba la contraseña con `openssl rand -hex 24` (48 caracteres): el SOAP del panel nunca pudo autenticarse, así que no era un fallo de la actualización del core. La falta de gmlevel daría 403, no 401. Queda como hipótesis descartada que fuese el verificador o el nombre en mayúsculas (ambos comprobados).
+
+**Arreglo:** `install.sh` genera ahora 16 caracteres (`openssl rand -hex 8`) y, si la contraseña guardada en el `.env` es más larga, la regenera y reescribe el `salt`/`verifier` de la cuenta (idempotente: si ya es válida no se toca). Ejecutado en la VM: SOAP responde `200` a `server info` con las credenciales del panel, con el usuario en minúsculas y en mayúsculas; el panel arranca y responde.
+
 ## 09/11/2026 (11:15) — UPD-Q: core, mod-playerbots y mod-congrats-on-level al día; caso `transmog`; CI-A
 
 Procedimiento de `INSTALL_ES.md` parte 4 §3. **Core** `3f2969d`→`e7e2e28` (127 commits), **mod-playerbots** `e88cc40`→`405f811` (43 commits) y **mod-congrats-on-level** `fed4752`→`925c2ae`, actualizados juntos, compilados (34 min: rebuild completo por el core), desplegados y verificados. Copia de seguridad previa en la carpeta de copias de la VM (`backup-20261109-1004`).
